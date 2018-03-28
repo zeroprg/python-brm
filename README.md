@@ -10,18 +10,16 @@
 5. Symbolic logical(boolean) and mathematical operations applied on top of all elements (function, scalar, vector, matrix or tensor)
 6. Result of this BRM  operation the scalar value 0(false)/1...n  where n how many rules a completed on vectors,matrix or tensors  level 
 7. Library used: 
-Theano symbolic operation library: 
-![Theano is best from the best. Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays efficiently. Theano features:
+!["Theano symbolic library"](http://deeplearning.net/software/theano
+"Theano is best from the best. Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays efficiently. Theano features:
 tight integration with NumPy – Use numpy.ndarray in Theano-compiled functions.
 transparent use of a GPU – Perform data-intensive computations much faster than on a CPU.
 efficient symbolic differentiation – Theano does your derivatives for functions with one or many inputs.
 speed and stability optimizations – Get the right answer for log(1+x) even when x is really tiny.
 dynamic C code generation – Evaluate expressions faster.
-extensive unit-testing and self-verification – Detect and diagnose many types of errors.
-](http://deeplearning.net/software/theano/g "Theano symbolic library ")
+extensive unit-testing and self-verification – Detect and diagnose many types of errors.")
 
-![
-](https://realpython.com/learn/start-django/ "Django Web project. ")
+!["Django Web project. "](https://realpython.com/learn/start-django/ )
 Solution wrapped as Visual Studio project.
 ##  Conclusion:
 This BRM engine is perfect tool (goal function) for optimal scenarious required to find best set arrangement of vector, matrix , tensor
