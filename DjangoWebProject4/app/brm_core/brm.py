@@ -5,16 +5,47 @@ import xlrd
 file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
 file_locConstants="C:\\Users\\ark0006\\Documents\\matrixOfConstants.xlsx"
 
-def loadMatrixFromExcell(file_loc):
+def conertToInt(f,s):
+     a = applyAsFunction(s)
+     return abs(hash(a)) % (10 ** 8)
+
+def applyAsFunction(f,s):
+    r = f
+    # if has parenteses inside consider it is function
+    if(f.index('(') > 0 and f.index(')') > 0 ):
+       r = eval(composeAsFunction(f,s))
+    return r
+
+def loadMatrixFromExcellAsBRM(file_loc):
     wkb=xlrd.open_workbook(file_loc)
     sheet=wkb.sheet_by_index(0)
-
+    brm_row = 0
     _matrix=[]
     for row in range (sheet.nrows):
-        _row = []
-        for col in range (sheet.ncols):
-            _row.append(sheet.cell_value(row,col))
-        _matrix.append(_row)
+        if( row > brm_row):
+            _row = []
+            for col in range (sheet.ncols):
+                 val = sheet.cell_value(row,col)
+                 f = sheet.cell_value(brm_row,col)
+                 if(not( type(val) is float or type(val) is int ) ): val = conertToInt(f,val)
+                 _row.append(val)
+            _matrix.append(_row)
+    return _matrix
+
+def loadMatrixFromExcellAsParameters(file_loc):
+    wkb=xlrd.open_workbook(file_loc)
+    sheet=wkb.sheet_by_index(0)
+    brm_row = 0
+    _matrix=[]
+    for row in range (sheet.nrows):
+        if( row > brm_row):
+            _row = []
+            for col in range (sheet.ncols):
+                 val = sheet.cell_value(row,col)
+                 f = sheet.cell_value(brm_row,col)
+                 if(not( type(val) is float or type(val) is int ) ): val = conertToInt(f,val)
+                 _row.append(val)
+            _matrix.append(_row)
     return _matrix
 
 
@@ -22,8 +53,8 @@ param,constant = T.dmatrices('param','constant')
 x,y = T.dmatrices('x','y')
 
 
-big_mat1 = loadMatrixFromExcell(file_locParams)
-big_mat2 = loadMatrixFromExcell(file_locConstants)
+big_mat1 = loadMatrixFromExcellAsParameters(file_locParams)
+big_mat2 = loadMatrixFromExcellAsBRM(file_locConstants)
 
 #a,b = T.scalars('a', 'b')
 #p,c = T.scalars('p','c')
@@ -42,7 +73,7 @@ def ruleDecesionTree1(param, constant):
 #ruleGT_s = T.switch(T.gt(p,c),  a, b)
 #ruleEQ_s = T.switch(T.eq(p,c) ,  a, b)
 
-ruleAgregator = (ruleGT + ruleGT)/2 # apply 2 rules together for all matrix elements and normilize it after
+ruleAgregator = eval(' (ruleGT + ruleGT)/2') # apply 2 rules together for all matrix elements and normilize it after
 ruleAgregator_s = ruleEQ + ruleGT  # apply 2 rules together for specifix elements in matrix 
 
 # Apply rules sequentially
