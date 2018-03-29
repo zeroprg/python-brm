@@ -140,8 +140,8 @@ def applyDictionary(dictionary, words):
 
     return applied
 
-def findFirstOpenParenthesesBlock(dict, str):
-    start=str.find('{') 
+def findFirstOpenParenthesesBlock(dictionary, str):
+    start=str.find('{')
     block =  re.search(r'{(.*)}', str).group(1)
     if( not block ): raise Exception( word + ' must have block of rules started with { and finished with }' )
     start=block.find('{')
@@ -151,20 +151,21 @@ def findFirstOpenParenthesesBlock(dict, str):
 
         # check from left side from parentes '{ '
         block_prefix = str[0:start]
-        for funct_word in dict:
+        for funct_word,value in dictionary.items():
             if( block_prefix.find(funct_word)>-1 ):
                 if(str.find(funct_word + '{' ) > -1 ): # create a first function
-                        functs.append[funct_word]
-                        _block =  findFirstOpenParenthesesBlock(dict, block_prefix)
-                        if(_block == block_prefix): break # stop left side recursion
+                        functs.append(value)
+                        block =  findFirstOpenParenthesesBlock(dictionary, block_prefix)
+                        break # stop left side recursion
+
             else:
                 # check from right side from parentes '{ '
-                for funct_word in dict:
+                for funct_word,value in dictionary.items():
                     if( block.find(funct_word)>-1 ):
-                        if(str.find(funct_word + '{' ) > -1 ): # create a second function
-                                functs.append[funct_word]
-                                _block =  findFirstOpenParenthesesBlock(dict, block)
-                                if(_block == block):  break # stop left side recursion
+                        if(block.find(funct_word + '{' ) > -1 ): # create a second function
+                                functs.append(value)
+                                block =  findFirstOpenParenthesesBlock(dictionary, block)
+                                break # stop left side recursion
                                
 
     return block
