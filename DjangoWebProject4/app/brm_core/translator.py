@@ -224,7 +224,11 @@ def findFirstOpenParenthesesBlock(dictionary, str):
                         new_blocks_pair = find_args(block, funct_word)
                         if( new_blocks_pair ): # create a second function
                                 functs.append(value)
-                                block =  findFirstOpenParenthesesBlock(dictionary, (new_blocks_pair[0], new_blocks_pair[1])[len(new_blocks_pair)>1] )
+                                if( len(new_blocks_pair)>1 ):
+                                    block =  findFirstOpenParenthesesBlock(dictionary, new_blocks_pair[0] )
+                                    block =  findFirstOpenParenthesesBlock(dictionary, new_blocks_pair[1] )
+                                else:
+                                      block =  findFirstOpenParenthesesBlock(dictionary, new_blocks_pair[0] )
                                 break # stop left side recursion
                                
 
