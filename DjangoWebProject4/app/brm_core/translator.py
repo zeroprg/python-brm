@@ -8,19 +8,25 @@ from collections import defaultdict
 # Default lamdas
 less = lambda param, constant:  T.switch(T.lt(param,constant),  x, y)
 greater = lambda param, constant:  T.switch(T.gt(param,constant),  x, y)
+boolean_and = lambda param, constant:  T.switch(x*y,  x, y)
+boolean_or = lambda param, constant:  T.switch(x+y,  x, y)
+
 total = lambda x: T.dot(x,numpy.ones((len(x))))
 def substring(str,arg1):
         return str [0:arg1-1]
 
 
 # Stack  of functions which will apply sequentially
-functs =[]
+functs = list()
 
-args = d = dict() 
+args = dict() 
 var_dict = {"var1" : 1 , "var2" : 2 ,"var3" : 3  }
 f_dictPriority2 = { ">" : greater, "<" : less  }
 f_dictPriority3 = { "Total of" : total }
 f_dictPriority1 = { 'extract first % characters':substring }
+f_dictPriority0 = { 'and': boolean_and, 'or' : boolean_or }
+
+dictionary = {**f_dictPriority0, **f_dictPriority1,**f_dictPriority2, **f_dictPriority3}
 operandsWith2Args = [">", "<" , ">=", "<=", "!="]
 #w, h = 10, 2;
 #args = [[0 for x in range(w)] for y in range(h)]
@@ -140,8 +146,60 @@ def applyDictionary(dictionary, words):
 
     return applied
 
+#Parentheses pairing ({}[]()<>) issue
+def evalParentheses(str):
+  stack = []
+  pushChars, popChars = "({", "})"
+  # prerequisits
+  
+  i = 0
+  for c in str :
+    if c in pushChars :
+      stack.append(c)
+    elif c in popChars :
+
+      if not len(stack) :
+        return False
+      else :
+        stackTop = stack.pop()
+        balancingBracket = pushChars[popChars.index(c)]
+        if stackTop != balancingBracket :
+          return False
+    else :
+      i +=1  
+  return (not len(stack) ) or len(str) == i 
+
+print( evalParentheses('345345'))
+
+
+def find_args(str, funct_name):
+    words = applyDelimeter(str, funct_name )
+    new_words = []
+    _new_words =''
+    #_if length more then 2 concatunate arrays in place where parenthes are broken 
+    if(len(words) > 2 ):
+            i,j = 0,0
+            for word in words:
+                i += 1
+                if ( evalParentheses(word) ) : 
+                    j = i
+                else : 
+                    _new_words +=  word
+            if( j > 0 ) :  
+                   new_words.append(_new_words)     
+                   new_words.append(words[j-1]) 
+            words = new_words
+    else:
+    # Check if every element of of word has open an closed parenthes correct
+        for word in words:
+            if (not evalParentheses(word) ) : return []
+    return words
+
+
+
 def findFirstOpenParenthesesBlock(dictionary, str):
     start=str.find('{')
+    if( start < 0 ): return str
     block =  re.search(r'{(.*)}', str).group(1)
     if( not block ): raise Exception( word + ' must have block of rules started with { and finished with }' )
     start=block.find('{')
@@ -153,18 +211,20 @@ def findFirstOpenParenthesesBlock(dictionary, str):
         block_prefix = str[0:start]
         for funct_word,value in dictionary.items():
             if( block_prefix.find(funct_word)>-1 ):
-                if(str.find(funct_word + '{' ) > -1 ): # create a first function
-                        functs.append(value)
-                        block =  findFirstOpenParenthesesBlock(dictionary, block_prefix)
+                new_blocks_pair = find_args(block_prefix, funct_word)
+                if( new_blocks_pair  ): # create a first function
+                        functs.append(value) 
+                        block =  findFirstOpenParenthesesBlock(dictionary, new_blocks_pair[0])
                         break # stop left side recursion
 
             else:
                 # check from right side from parentes '{ '
                 for funct_word,value in dictionary.items():
                     if( block.find(funct_word)>-1 ):
-                        if(block.find(funct_word + '{' ) > -1 ): # create a second function
+                        new_blocks_pair = find_args(block, funct_word)
+                        if( new_blocks_pair ): # create a second function
                                 functs.append(value)
-                                block =  findFirstOpenParenthesesBlock(dictionary, block)
+                                block =  findFirstOpenParenthesesBlock(dictionary, (new_blocks_pair[0], new_blocks_pair[1])[len(new_blocks_pair)>1] )
                                 break # stop left side recursion
                                
 
@@ -194,9 +254,12 @@ def Translator(str, row, col):
 #===========================================================================================#
 
 
+
 str = "Calculate { Total of{ (CushionDB<30) and (CushionDB>34) or (Length <10000 )} < 56 } for car in range"
 print(str)
-str = findFirstOpenParenthesesBlock (f_dictPriority3, str)
+print( find_args('Total of{ (CushionDB<30) and (CushionDB>34) or (Length <10000 )} < 56 ', '<'))
+_words =  applyDelimeter('Total of{ (CushionDB<30) and (CushionDB>34) or (Length <10000 )} < 56 ', '<')
+str = findFirstOpenParenthesesBlock (dictionary, str)
 _words =  applyDelimeter(str, "and")
 first_word_delemiterd =  applyDelimeters(_words[0])
 #Check word by word is match with dictionaries' function
@@ -204,6 +267,6 @@ first_word_delemiterd =  applyDelimeters(_words[0])
 print(first_word_delemiterd )
 print(functs)
 
-print(applyDictionary(  f_dictPriority3 , first_word_delemiterd ))
+print(applyDictionary(  dictionary , first_word_delemiterd ))
 
 
