@@ -27,6 +27,7 @@ class RuleEvaluator(object):
                          '=' : 'T.eq(self.param,'+ constant +')'
                         }
         self.operand = self.operands[operand]
+        self.operand_symb = operand
         self.args = args
         self.args_str = (','.join(args))
         #print(self.args_str)
@@ -51,8 +52,12 @@ class RuleEvaluator(object):
     ."""
     def __rule(self,p1,*therest):
         print(self.rule)
-        self.param = eval(self.rule)    
-        self.param = T.switch(eval(self.operand), self.zeros, self.ones)
+        if( self.rule.find('sum(') ): 
+            self.param =  eval(self.rule + self.operand_symb + '0')
+        else:
+            self.param = eval(self.rule)
+            self.param = T.switch(eval(self.operand), self.zeros, self.ones)
+            
         return self.param
     
         
@@ -70,23 +75,34 @@ class RuleEvaluator(object):
 # Tests
 rows,cols = 2,2
 
-m1 = numpy.random.randint(5,size=(rows,cols))
-m2 = numpy.random.randint(5,size=(rows,cols))
-m3 = numpy.random.randint(5,size=(rows,cols))
-m4 = numpy.random.randint(5,size=(rows,cols))
-m5 = numpy.random.randint(5,size=(rows,cols))
+m1 = numpy.random.randint(3,size=(rows,cols))
+m2 = numpy.random.randint(3,size=(rows,cols))
+m3 = numpy.random.randint(3,size=(rows,cols))
+m4 = numpy.random.randint(3,size=(rows,cols))
+m5 = numpy.random.randint(3,size=(rows,cols))
+
+x = T.dvector('x')
+y = x.sum()
+x = numpy.random.randint(5,size=(rows,cols))  
 
 
-re = RuleEvaluator('a-b','>',['a','b'],rows,cols)
+#re = RuleEvaluator('a-b','>',['a','b'],rows,cols)
+#re = RuleEvaluator('a','>',['a'],rows,cols)
+re1 = RuleEvaluator('((a).sum() / (b).sum()) - 1','>',['a','b'],rows,cols)
+re2 = RuleEvaluator('(a -b)','>',['a','b'],rows,cols)
 
-
-c =  re.evaluate(m3,m5)
+#c =  re.evaluate(m3)
 
 print ('a: ' ) 
 print (m3) 
 print ('b: ')
 print (m5)
-print( 'a-b>0: ')
+#print( 'a-b>0: ')
+print( '((a).sum() / (b).sum()) - 1 > 0 :')
+c =  re1.evaluate(m3,m5)*re2.evaluate(m3,m5)/2
+
+print (c)
+c =  re1.evaluate(m3,m5)*re2.evaluate(m3,m5)
 print (c)
  
 
