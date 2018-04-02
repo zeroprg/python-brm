@@ -24,8 +24,8 @@ class RuleEvaluator(object):
         constant = args[len(args)-1] # constant is last arg
         self.operands = {'<' : 'T.gt(self.param,'+ constant +')',
                          '>' : 'T.lt(self.param,'+ constant +')',
-                         '=>': 'T.le(self.param,'+ constant +')',
-                         '=<': 'T.le(self.param,'+ constant +')',
+                         '>=': 'T.le(self.param,'+ constant +')',
+                         '<=': 'T.le(self.param,'+ constant +')',
                          '=' : 'T.eq(self.param,'+ constant +')'
                         }
         self.operand = self.operands[operand]
@@ -77,11 +77,11 @@ class RuleEvaluator(object):
 # Tests
 rows,cols = 2,1
 
-m1 = [[1,1]] #numpy.random.randint(3,size=(rows,cols))
-m2 = [[1,1]] #numpy.random.randint(3,size=(rows,cols))
-m3 = [[1,1]] #numpy.random.randint(3,size=(rows,cols))
-m4 = [[1,1]] #numpy.random.randint(3,size=(rows,cols))
-m5 = [[1,1]] #numpy.random.randint(3,size=(rows,cols))
+m1 = numpy.random.randint(3,size=(rows,cols)) # [[1,1]] 
+m2 = numpy.random.randint(3,size=(rows,cols))
+m3 = numpy.random.randint(3,size=(rows,cols))
+m4 = numpy.random.randint(3,size=(rows,cols))
+m5 = numpy.random.randint(3,size=(rows,cols))
 
 x = T.dvector('x')
 y = x.sum()
@@ -104,12 +104,26 @@ print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0} :')
 c =  totalRule.evaluate(m3,m5)*rule.evaluate(m3,m5)*1
 print (c)
  
+
+set1 = (m3,m5)
+set2 = (m1,m2)
+
+# Create mapping between vaiables and real data
+param_dict = {'a' : m1, 'b': m2}
+set1 = (m3,m5)
+set2 =  (param_dict['a'], param_dict['b'])
+#print(a, b)
 # Applying multiple rules 
-
 print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0}  +  { (a -b) > 0 }:')
+c =  (totalRule.evaluate(*set1) + rule.evaluate(*set2) + rule.evaluate(*set2))/3
 
-c =  (totalRule.evaluate(m3,m5) + rule.evaluate(m3,m5) + rule.evaluate(m1,m2))/3
+
+
+
+
  
+
+
 # loop over all available rules:
  
  
