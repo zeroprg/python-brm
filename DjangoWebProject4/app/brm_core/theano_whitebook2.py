@@ -24,8 +24,8 @@ class RuleEvaluator(object):
         constant = args[len(args)-1] # constant is last arg
         self.operands = {'<' : 'T.gt(self.param,'+ constant +')',
                          '>' : 'T.lt(self.param,'+ constant +')',
-                         '=>' : 'T.le(self.param,'+ constant +')',
-                         '=<' : 'T.le(self.param,'+ constant +')',
+                         '=>': 'T.le(self.param,'+ constant +')',
+                         '=<': 'T.le(self.param,'+ constant +')',
                          '=' : 'T.eq(self.param,'+ constant +')'
                         }
         self.operand = self.operands[operand]
