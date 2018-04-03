@@ -54,7 +54,7 @@ class RuleEvaluator(object):
     ."""
     def __rule(self,p1,*therest):
         print(self.rule)
-        if( self.rule.find('sum(') ): 
+        if( self.rule.find('sum(') >=0 ): 
             self.param =  eval(self.rule + self.operand_symb + '0')
         else:
             self.param = eval(self.rule)
@@ -115,7 +115,7 @@ set2 =  (param_dict['a'], param_dict['b'])
 #print(a, b)
 # Applying multiple rules 
 print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0}  +  { (a -b) > 0 }:')
-c =  (totalRule.evaluate(*set1) + rule.evaluate(*set2) + rule.evaluate(*set2))/3
+c =  (totalRule.evaluate(*set1) * rule.evaluate(*set2) + rule.evaluate(*set2))/2
 
 
 
