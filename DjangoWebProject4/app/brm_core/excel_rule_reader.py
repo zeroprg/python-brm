@@ -7,7 +7,8 @@ file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
 file_locConstants="C:\\Users\\ark0006\\Documents\\matrixOfConstants.xlsx"
 file_locRules="C:\\Users\\ark0006\\Documents\\BRMRules.xlsx"
 
-_funct_dict = {'check_first_2_characters_of': 'find', "Sum_of": 'sum'  }
+
+_funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
 
 
 def conv_rule1(val):
@@ -20,8 +21,16 @@ def conv_rule1(val):
         match = re.search(r'(?<=sum\()\w+', val)
     return val
 
+# find any occurance of elements from search_list in string in position 0
+def find(string,search_list): 
+    return any( x in string for x in search_list) and string.find(x) == 0
+ 
+vfind = np.vectorize(find)
+
+
+
 # special dictionary which say how convert written  functions to python notations
-conv_rule_dict = {'Sum_of':  conv_rule1 }
+conv_rule_dict = {'Sum_of':  conv_rule1}
 
 def conertToInt(s):
      return abs(hash(s)) % (10 ** 8)
