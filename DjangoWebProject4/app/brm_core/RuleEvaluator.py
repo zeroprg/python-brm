@@ -83,11 +83,11 @@ class RuleEvaluator(object):
 
 
 # Tests
-rows,cols = 2,1
+rows,cols = 20,1
 
 m1 = numpy.random.randint(3,size=(rows,cols)) # [[1,1]] 
-m2 =  [[1],[-1]] # numpy.random.randint(3,size=(rows,cols))
-m3 =  [[1],[-1]]
+m2 = numpy.random.randint(3,size=(rows,cols)) # [[1],[-1]]
+m3 = numpy.random.randint(3,size=(rows,cols)) #[[1],[-1]]
 m4 = numpy.random.randint(3,size=(rows,cols))
 m5 = numpy.random.randint(3,size=(rows,cols))
 
@@ -114,6 +114,12 @@ print ( one_arg_rule.evaluate(m3) )
 
 print( 'a-1>0: ')
 print ( one_arg_rule2.evaluate(m3) )
+
+print( '((a).sum() / (b).sum()) - 1 > 0:')
+c =  totalRule.evaluate(m3,m5)
+print (c)
+
+
 print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0} :')
 c =  totalRule.evaluate(m3,m5)*rule.evaluate(m3,m5)*1
 print (c)
