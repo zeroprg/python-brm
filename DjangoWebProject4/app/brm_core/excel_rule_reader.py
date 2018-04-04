@@ -199,9 +199,14 @@ for r in _r: stcc.append([r])
 print(stcc)
 
 print('Position < 5')
-print((eval_rules_dict['STCC,Position'][0][0]).evaluate(Position))
+position_rule = (eval_rules_dict['STCC,Position'][0][0])
+position_rule_param = (eval_rules_dict['STCC,Position'][0][1])
+param_list = eval('(' + ''.join(position_rule_param) + ')') # create tupil
+#position_rule.show_log = False
+position_result = position_rule.evaluate(param_list)
+print( position_result )
 
-result =  (eval_rules_dict['STCC,Position'][0][0]).evaluate(Position) * stcc 
+result =  position_result * stcc 
 print('BRM result:')
 print('##########################################################################################################################')
 print(result)

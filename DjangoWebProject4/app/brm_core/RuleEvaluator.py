@@ -19,23 +19,16 @@ class RuleEvaluator(object):
         """Return a Customer object whose name is *name* and starting
         balance is *balance*."""
         self.rule = python_code_rule
-        
-       # just case 
+        self.show_log = True
+      # just case 
         constant = args[len(args)-1] # constant is last arg
-        if(len(args) == 1 ):
-                self.operands = {'<' : 'T.gt('+ constant +',0)',
-                             '>' : 'T.lt('+ constant +',0)',
-                             '>=': 'T.le('+ constant +',0)',
-                             '<=': 'T.le('+ constant +',0)',
-                             '=' : 'T.eq('+ constant +',0)'
-                            }
-        else:
-                self.operands = {'<' : 'T.gt(self.param,'+ constant +')',
-                             '>' : 'T.lt(self.param,'+ constant +')',
-                             '>=': 'T.le(self.param,'+ constant +')',
-                             '<=': 'T.le(self.param,'+ constant +')',
-                             '=' : 'T.eq(self.param,'+ constant +')'
-                            }
+        self.operands = {'>' : 'T.gt(self.param,0)',
+                        '<' : 'T.lt(self.param,0)',
+                        '<=': 'T.le(self.param,0)',
+                        '>=': 'T.ge(self.param,0)',
+                        '=' : 'T.eq(self.param,0)'
+                    }
+ 
         self.operand = self.operands[operand]
         self.operand_symb = operand
         self.args = args
@@ -53,6 +46,7 @@ class RuleEvaluator(object):
         self.f_switch = theano.function(self._list, self.__rule(self._list),
                             mode=theano.Mode(linker='vm'))
 
+
         
  
         
@@ -65,8 +59,8 @@ class RuleEvaluator(object):
         if( self.rule.find('sum(') >=0 ): 
             self.param =  eval(self.rule + self.operand_symb + '0')
         else:
-            self.param = eval(self.rule)
-            self.param = T.switch(eval(self.operand), self.zeros, self.ones)
+            self.param = eval(self.rule) 
+            self.param = T.switch(eval(self.operand),  self.ones, self.zeros,)
             
         return self.param
     
@@ -77,11 +71,12 @@ class RuleEvaluator(object):
         """Return the function which available to apply arguments and run
         ."""
         ret = self.f_switch(p1,*therest) 
-        if( ret.shape != () ):
+        if( self.show_log and ret.shape != () ):
+            rule_failed = 0
             for r in ret:
-                if( 0. in r ) :
+                if( 0. in r ) : rule_failed += 1
                     # rule failed
-                    print( 'Rule: ' + self.rule + self.operand_symb + '0 was failed')
+            if ( rule_failed > 0 ): print( 'Rule: "' + self.rule + ' '+self.operand_symb + ' 0" was failed ' + str(rule_failed) + ' time(s)')
         return ret
 
 
@@ -96,16 +91,17 @@ m3 =  [[1],[-1]]
 m4 = numpy.random.randint(3,size=(rows,cols))
 m5 = numpy.random.randint(3,size=(rows,cols))
 
-x = T.dvector('x')
-y = x.sum()
-x = numpy.random.randint(5,size=(rows,cols))  
+#x = T.dvector('x')
+#y = x.sum()
+#x = numpy.random.randint(5,size=(rows,cols))  
 
 
-#re = RuleEvaluator('a-b','>',['a','b'],rows,cols)
+
 #re = RuleEvaluator('a','>',['a'],rows,cols)
 totalRule = RuleEvaluator('((a).sum() / (b).sum()) - 1','>',['a','b'],rows,cols)
 rule = RuleEvaluator('(a -b)','>',['a','b'],rows,cols)
 one_arg_rule = RuleEvaluator('a','>',['a'],rows,cols)
+one_arg_rule2 = RuleEvaluator('a-1','>','a',rows,cols)
 #c =  re.evaluate(m3)
 
 print ('a: ' ) 
@@ -116,7 +112,8 @@ print (m5)
 print ('a>0: ' ) 
 print ( one_arg_rule.evaluate(m3) )
 
-#print( 'a-b>0: ')
+print( 'a-1>0: ')
+print ( one_arg_rule2.evaluate(m3) )
 print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0} :')
 c =  totalRule.evaluate(m3,m5)*rule.evaluate(m3,m5)*1
 print (c)
