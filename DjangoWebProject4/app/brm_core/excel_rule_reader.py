@@ -3,6 +3,8 @@ import theano.tensor as T
 import xlrd
 import re
 import numpy as np
+from theano.tensor import _shared
+from numpy import array
 
 from RuleEvaluator import RuleEvaluator
 
@@ -180,15 +182,26 @@ print('Dictionary of not evaluated rules (rules without parameters):')
 print('##########################################################################################################################')
 print(rules_immediate_eval_dict)
 
-STCC = param_mtrx[0]
-Position =  np.random.randint(50,size=(rows,cols))
+ones = np.ones((rows,cols), dtype=int)
+STCC =  param_mtrx [0][0:rows]
+
+Position =  np.random.randint(8,size=(rows,cols))
 print('STCC: ' )
-print( len(STCC))
+print( len(STCC[0]))
 print(STCC)
 print('Position:')
 print(Position)
 
-result =  (eval_rules_dict['STCC,Position'][0][0]).evaluate(Position) * eval(rules_immediate_eval_dict['STCC,Position']) *
+print('check_first_2_characters_of(STCC)')
+_r = eval(rules_immediate_eval_dict['STCC,Position'])
+stcc = []
+for r in _r: stcc.append([r])
+print(stcc)
+
+print('Position < 5')
+print((eval_rules_dict['STCC,Position'][0][0]).evaluate(Position))
+
+result =  (eval_rules_dict['STCC,Position'][0][0]).evaluate(Position) * stcc 
 print('BRM result:')
 print('##########################################################################################################################')
 print(result)
