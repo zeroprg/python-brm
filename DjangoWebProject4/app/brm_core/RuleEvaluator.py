@@ -77,6 +77,11 @@ class RuleEvaluator(object):
         """Return the function which available to apply arguments and run
         ."""
         ret = self.f_switch(p1,*therest) 
+        if( ret.shape != () ):
+            for r in ret:
+                if( 0. in r ) :
+                    # rule failed
+                    print( 'Rule: ' + self.rule + self.operand_symb + '0 was failed')
         return ret
 
 
