@@ -22,12 +22,20 @@ class RuleEvaluator(object):
         
        # just case 
         constant = args[len(args)-1] # constant is last arg
-        self.operands = {'<' : 'T.gt(self.param,'+ constant +')',
-                         '>' : 'T.lt(self.param,'+ constant +')',
-                         '>=': 'T.le(self.param,'+ constant +')',
-                         '<=': 'T.le(self.param,'+ constant +')',
-                         '=' : 'T.eq(self.param,'+ constant +')'
-                        }
+        if(len(args) == 1 ):
+                self.operands = {'<' : 'T.gt('+ constant +',0)',
+                             '>' : 'T.lt('+ constant +',0)',
+                             '>=': 'T.le('+ constant +',0)',
+                             '<=': 'T.le('+ constant +',0)',
+                             '=' : 'T.eq('+ constant +',0)'
+                            }
+        else:
+                self.operands = {'<' : 'T.gt(self.param,'+ constant +')',
+                             '>' : 'T.lt(self.param,'+ constant +')',
+                             '>=': 'T.le(self.param,'+ constant +')',
+                             '<=': 'T.le(self.param,'+ constant +')',
+                             '=' : 'T.eq(self.param,'+ constant +')'
+                            }
         self.operand = self.operands[operand]
         self.operand_symb = operand
         self.args = args
@@ -78,8 +86,8 @@ class RuleEvaluator(object):
 rows,cols = 2,1
 
 m1 = numpy.random.randint(3,size=(rows,cols)) # [[1,1]] 
-m2 = numpy.random.randint(3,size=(rows,cols))
-m3 = numpy.random.randint(3,size=(rows,cols))
+m2 =  [[1],[-1]] # numpy.random.randint(3,size=(rows,cols))
+m3 =  [[1],[-1]]
 m4 = numpy.random.randint(3,size=(rows,cols))
 m5 = numpy.random.randint(3,size=(rows,cols))
 
@@ -92,13 +100,17 @@ x = numpy.random.randint(5,size=(rows,cols))
 #re = RuleEvaluator('a','>',['a'],rows,cols)
 totalRule = RuleEvaluator('((a).sum() / (b).sum()) - 1','>',['a','b'],rows,cols)
 rule = RuleEvaluator('(a -b)','>',['a','b'],rows,cols)
-
+one_arg_rule = RuleEvaluator('a','>',['a'],rows,cols)
 #c =  re.evaluate(m3)
 
 print ('a: ' ) 
 print (m3) 
 print ('b: ')
 print (m5)
+
+print ('a>0: ' ) 
+print ( one_arg_rule.evaluate(m3) )
+
 #print( 'a-b>0: ')
 print( '{((a).sum() / (b).sum()) - 1 > 0} and {a-b > 0} :')
 c =  totalRule.evaluate(m3,m5)*rule.evaluate(m3,m5)*1

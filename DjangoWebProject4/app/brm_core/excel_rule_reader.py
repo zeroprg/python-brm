@@ -185,7 +185,7 @@ print(rules_immediate_eval_dict)
 ones = np.ones((rows,cols), dtype=int)
 STCC =  param_mtrx [0][0:rows]
 
-Position =  np.random.randint(8,size=(rows,cols))
+Position =  np.random.randint(7,size=(rows,cols))
 print('STCC: ' )
 print( len(STCC[0]))
 print(STCC)
