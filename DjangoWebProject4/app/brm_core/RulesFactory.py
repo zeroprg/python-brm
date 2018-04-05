@@ -23,7 +23,6 @@ def conv_rule1(val):
     match = re.search(r'(?<=sum\()\w+', val)
     if( not match ): raise Exception( 'function Sum_of must have at least 1 argument. Error in: ' + str )
     while match : 
-        print(match)
         arg = match.group(0)
         val = val.replace('sum(' + arg + ')', '(' + arg + ').sum()')
         match = re.search(r'(?<=sum\()\w+', val)
@@ -70,7 +69,7 @@ class RulesFactory(object):
     def __init__(self,  file_locRules , rows, cols):
         """Return a Customer object whose name is *name* and starting
         balance is *balance*."""
-        self.show_log = True
+        self.show_log = False
         self.eval_rules_dict = {}
         self.rules_immediate_eval_dict = {}
         self.rules_mtrx = self.loadMatrixFromExcellAsRules(file_locRules)
@@ -266,7 +265,7 @@ param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
 
 # define all parameters:
 STCC      = param_mtrx [0][0:rows]
-Position_  = np.random.randint(50,size=(rows,cols))
+Position_  = vector_to_matrix(np.arange(rows))
 Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
 Length_    = vector_to_matrix(param_mtrx [2][0:rows])
 CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
@@ -274,6 +273,7 @@ Hazard_ =    vector_to_matrix(param_mtrx [4][0:rows])
 
 
 rf = RulesFactory(file_locRules,rows,cols)
+rf.show_log = False
 ret = rf.fireBRM()
 print('BRM result:')
 print('##########################################################################################################################')
