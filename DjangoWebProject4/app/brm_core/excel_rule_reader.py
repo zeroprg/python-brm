@@ -85,16 +85,14 @@ def findWholeWord(w):
     return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
 
-def do_rule_leftshift(rule,operands):
-    ret = (rule,)
+def find_operand(rule,operands):
+    ret = ''
     for x in operands:
-        if ( x in rule ):
-    # return tuple of rule and operand 
-            _s = rule.replace(x,'-')
-            if( _s.find('-0') >= 0 ):
-               _s = _s.replace('-0' , '')
-            ret = (_s , x)
+        if ( x in rule ): 
+            ret = x
             break
+    return ret
+
     
     # none operand default assumtion:  if no operand found consider this rule exceptional and use evaluate it as it is
     #  after compare this function with 0 
@@ -197,10 +195,10 @@ for j in range(len(rules_mtrx[0])):
         all_params = rules_mtrx[0][j]
         rule = rules_mtrx[i][j]
         if( not rule or rule == 'None' ): continue
-        rule_info = do_rule_leftshift(rule,['<','>','>=','<=','=']) # move to translate rule
-        if( len(rule_info) == 1 ):
+        operand = find_operand(rule,['<','>','>=','<=','=']) # move to translate rule
+        if( not operand ):
             # add no parameters rules to immediate evaluation rule's dictionary by key where key is point to spreadsheet column
-            rules_immediate_eval_dict[','.join(all_params)] = rule_info[0]
+            rules_immediate_eval_dict[','.join(all_params)] =  rule
         else: 
             params = populate_rule_args(rule,all_params)
             # add Rule function , rule's paramters pair to tupil
@@ -209,10 +207,11 @@ for j in range(len(rules_mtrx[0])):
             else:
                 rule_params = eval('_,'.join(params) + '_')
             
+            pair = rule.split(operand)
+            rule_left = pair[0]
+            rule_right= pair[1]
+            _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,rows,cols), rule_params) )
 
-
-
-            _rules.append( (RuleEvaluator(rule_info[0],rule_info[1],params,rows,cols), rule_params) )
     if( len(_rules)>0 ):
        eval_rules_dict[','.join(all_params)] = _rules
 print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))

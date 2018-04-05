@@ -8,6 +8,8 @@ from numpy import array
 import time
 from RuleEvaluator import RuleEvaluator
 
+# Global variables and rules defined as  functions 
+#================================================================================================
 
 _funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
 _constant_dict = {'Y': 1, 'N': 0}
@@ -51,8 +53,8 @@ def vector_to_matrix(v):
     for r in v: ret.append([r]) 
     return ret
 
-
-
+# Class itself
+#================================================================================================
 
 class RulesFactory(object):
     """A RulesFactory evaluate symbolic rule . RuleEvaluator have the
@@ -68,9 +70,21 @@ class RulesFactory(object):
     def __init__(self,  file_locRules , rows, cols):
         """Return a Customer object whose name is *name* and starting
         balance is *balance*."""
+        self.show_log = True
         self.eval_rules_dict = {}
         self.rules_immediate_eval_dict = {}
         self.rules_mtrx = self.loadMatrixFromExcellAsRules(file_locRules)
+        if( self.show_log ):
+            print('Matrix of rules:')
+            print('##########################################################################################################################')
+            print(self.rules_mtrx)
+
+        self.EvaluateAllRules()
+        if( self.show_log ):
+            print('Dictionary of evaluated rules:')
+            print('##########################################################################################################################')
+            print(self.eval_rules_dict)
+
 
     def conertToInt(s):
         ret = 0
@@ -93,7 +107,7 @@ class RulesFactory(object):
         return ret
     
     # Start point for translation rule from string to Python code
-    def do_rule_translation(rule, val):
+    def do_rule_translation(self,rule, val):
          ret = val.replace( rule, _funct_dict[rule] )
          if( rule in conv_rule_dict ):
            ret = conv_rule_dict[rule](ret)
@@ -103,30 +117,24 @@ class RulesFactory(object):
         return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
         
     
-    def do_rule_leftshift(rule,operands):
-        ret = (rule,)
+    def find_operand(self,rule,operands):
+        ret = ''
         for x in operands:
-            if ( x in rule ):
-        # return tuple of rule and operand 
-                _s = rule.replace(x,'-')
-                if( _s.find('-0') >= 0 ):
-                   _s = _s.replace('-0' , '')
-                ret = (_s , x)
+            if ( x in rule ): 
+                ret = x
                 break
-        
-        # none operand default assumtion:  if no operand found consider this rule exceptional and use evaluate it as it is
-        #  after compare this function with 0 
         return ret
     
     #Populate tuples of args for rule
-    def populate_rule_args(rule,all_params):
+    def populate_rule_args(self,rule,all_params):
         args = []
         for arg in all_params:
             if( rule.find(arg) >=0 ): args.append(arg)
         if( not args ): raise Exception( 'Rule: "' +  rule+ '"  must have at least one argument. To fix it define argument in first row of spreadsheet ')
         return args
     
-    
+    # This is static method used as helper to download parameters from spreadsheet for BRM evaluator. 
+    # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
     def loadMatrixFromExcellAsConstants(file_loc):
         wkb=xlrd.open_workbook(file_loc)
         sheet=wkb.sheet_by_index(0)
@@ -136,18 +144,17 @@ class RulesFactory(object):
                 for row in range (sheet.nrows):
                      val = sheet.cell_value(row,col)
                      if( col > 0): #exception case: read first column as it is without hash conversion 
-                        if(not( type(val) is float or type(val) is int ) ): val = conertToInt(val)
+                        if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
                      _row.append(val)
                 _matrix.append(_row)
         return _matrix
     
-    def loadMatrixFromExcellAsRules(file_loc):
+    def loadMatrixFromExcellAsRules(self, file_loc):
         wkb=xlrd.open_workbook(file_loc)
         sheet=wkb.sheet_by_index(0)
         parameters_row = 0
         _matrix=[]
         for row in range (sheet.nrows):
-        
                 _row = []
                 for col in range (sheet.ncols):
                      val = sheet.cell_value(row,col)
@@ -161,7 +168,7 @@ class RulesFactory(object):
                      else:
                          for rule in _funct_dict: 
                              if (  val.find(rule) >= 0 ):
-                                 val = do_rule_translation( rule, val ) # this word is rule function translate it
+                                 val = self.do_rule_translation( rule, val ) # this word is rule function translate it
                             
                          if( val.find('\'') >=0 ): val = constantReplacer(val)
                          _row.append(val)
@@ -186,18 +193,21 @@ class RulesFactory(object):
                 all_params = self.rules_mtrx[0][j]
                 rule = self.rules_mtrx[i][j]
                 if( not rule or rule == 'None' ): continue
-                rule_info = do_rule_leftshift(rule,['<','>','>=','<=','=']) # move to translate rule
-                if( len(rule_info) == 1 ):
+                operand = self.find_operand(rule,['<','>','>=','<=','=']) # move to translate rule
+                if( not operand ):
                     # add no parameters rules to immediate evaluation rule's dictionary by key where key is point to spreadsheet column
-                    self.rules_immediate_eval_dict[','.join(all_params)] = rule_info[0]
+                    self.rules_immediate_eval_dict[','.join(all_params)] = rule
                 else: 
-                    params = populate_rule_args(rule,all_params)
+                    params = self.populate_rule_args(rule,all_params)
                     # add Rule function , rule's paramters pair to tupil
                     if( len(params) == 1 ) :
                         rule_params = (globals()[params[0]+'_'])
                     else:
                         rule_params = eval('_,'.join(params) + '_')
-                    _rules.append( (RuleEvaluator(rule_info[0],rule_info[1],params,rows,cols), rule_params) )
+                    pair = rule.split(operand)
+                    rule_left = pair[0]
+                    rule_right= pair[1]
+                    _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,rows,cols), rule_params) )
             if( len(_rules)>0 ):
                self.eval_rules_dict[','.join(all_params)] = _rules
         print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
@@ -233,14 +243,9 @@ class RulesFactory(object):
                         rule_ret = rule.evaluate(rule_params)
                 else:
                         rule_ret = rule.evaluate(*rule_params)
-                
-        
-                #_param_list = '_,'.join(rule_param) + '_'
-                #param_list = eval('(' + _param_list + ')') # create tupil
-        
                 _ret = _ret * rule_ret
             if( key in self.rules_immediate_eval_dict ) :  
-                _ret = _ret * evaluate_none_arg_rules(key)
+                _ret = _ret * self.evaluate_none_arg_rules(key)
             if( key in _boolean_operations_dict ): 
                 #call numpy boolean functions for whole column _ret = np.logical_not(_ret)
                 if(_boolean_operations_dict[key] == 'NOT' ):
@@ -251,18 +256,13 @@ class RulesFactory(object):
             ret  +=  _ret*1 
         ret = ret/normalizer
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
-        print('BRM result:')
-        print('##########################################################################################################################')
-        print(ret)
         return ret
 
-
+rows,cols = 50,1
 file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
 file_locRules="C:\\Users\\ark0006\\Documents\\BRMRules.xlsx"
 
-rows,cols = 50,1
-rf = RulesFactory(file_locRules,rows,cols)
-param_mtrx = rf.loadMatrixFromExcellAsConstants(file_locParams)
+param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
 
 # define all parameters:
 STCC      = param_mtrx [0][0:rows]
@@ -272,4 +272,9 @@ Length_    = vector_to_matrix(param_mtrx [2][0:rows])
 CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
 Hazard_ =    vector_to_matrix(param_mtrx [4][0:rows])
 
-rf.fireBRM()
+
+rf = RulesFactory(file_locRules,rows,cols)
+ret = rf.fireBRM()
+print('BRM result:')
+print('##########################################################################################################################')
+print(ret)
