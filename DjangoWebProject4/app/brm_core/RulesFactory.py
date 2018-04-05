@@ -258,8 +258,8 @@ class RulesFactory(object):
         return ret
 
 rows,cols = 50,1
-file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
-file_locRules="C:\\Users\\ark0006\\Documents\\BRMRules.xlsx"
+file_locParams="..\\..\\matrixOfParams.xlsx"
+file_locRules="..\\..\\BRMRules.xlsx"
 
 param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
 
