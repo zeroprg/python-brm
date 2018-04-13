@@ -15,8 +15,9 @@ def vector_to_matrix(v):
     return ret
 
 rows,cols = 50,1
-file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
-file_locRules="C:\\Users\\ark0006\\Documents\\BRMRules.xlsx"
+file_locParams="..\matrixOfParams.xlsx"
+file_locRules="..\BRMRulesInColumns.xlsx"
+#file_locRules="..\BRMRulesInRows.xlsx"
 
 param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
 
