@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "DjangoWebProject4", "DjangoWebProject4\DjangoWebProject4.pyproj", "{A30CB984-C95F-49B2-BC41-AD16660D0EB7}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "main", "DjangoWebProject4\main.pyproj", "{A30CB984-C95F-49B2-BC41-AD16660D0EB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
