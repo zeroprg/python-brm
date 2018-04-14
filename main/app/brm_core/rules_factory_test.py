@@ -6,13 +6,8 @@ import numpy as np
 from theano.tensor import _shared
 from numpy import array
 import time
-
 from RulesFactory import RulesFactory
 
-def vector_to_matrix(v):
-    ret = []
-    for r in v: ret.append([r]) 
-    return ret
 
 rows,cols = 50,1
 file_locParams="matrixOfParams.xlsx"
@@ -20,15 +15,7 @@ file_locRules="BRMRulesInColumns.xlsx"
 #file_locRules="..\BRMRulesInRows.xlsx"
 
 param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
-
-# define all parameters:
-STCC      = param_mtrx [0][0:rows]
-Position_  = vector_to_matrix(np.arange(rows))
-Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
-Length_    = vector_to_matrix(param_mtrx [2][0:rows])
-CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
-Hazard_ =    vector_to_matrix(param_mtrx [4][0:rows])
-
+RulesFactory.setParameters(param_mtrx,rows)
 
 rf = RulesFactory(file_locRules,rows,cols)
 rf.show_log = False

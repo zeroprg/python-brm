@@ -11,6 +11,7 @@ from RuleEvaluator import RuleEvaluator
 # Global variables and rules defined as  functions 
 #================================================================================================
 
+
 _funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
 _constant_dict = {'Y': 1, 'N': 0}
 #def boolean_f(x):
@@ -52,6 +53,10 @@ def vector_to_matrix(v):
     for r in v: ret.append([r]) 
     return ret
 
+
+    
+
+
 # Class itself
 #================================================================================================
 
@@ -70,6 +75,8 @@ class RulesFactory(object):
         """Return a Customer object whose name is *name* and starting
         balance is *balance*."""
         self.show_log = False
+        self.rows = rows
+        self.cols = cols
         self.eval_rules_dict = {}
         self.rules_immediate_eval_dict = {}
         self.rules_mtrx = self.loadMatrixFromExcellAsRules(file_locRules)
@@ -84,6 +91,16 @@ class RulesFactory(object):
             print('##########################################################################################################################')
             print(self.eval_rules_dict)
 
+
+
+    def setParameters(param_mtrx, rows):
+        # define all parameters:
+        STCC       = param_mtrx [0][0:rows]
+        Position_  = vector_to_matrix(np.arange(rows))
+        Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
+        Length_    = vector_to_matrix(param_mtrx [2][0:rows])
+        CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
+        Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
 
     def conertToInt(s):
         ret = 0
@@ -200,13 +217,13 @@ class RulesFactory(object):
                     params = self.populate_rule_args(rule,all_params)
                     # add Rule function , rule's paramters pair to tupil
                     if( len(params) == 1 ) :
-                        rule_params = (globals()[params[0]+'_'])
+                        rule_params =  (globals()[params[0]+'_'])
                     else:
                         rule_params = eval('_,'.join(params) + '_')
                     pair = rule.split(operand)
                     rule_left = pair[0]
                     rule_right= pair[1]
-                    _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,rows,cols), rule_params) )
+                    _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,self.rows,self.cols), rule_params) )
             if( len(_rules)>0 ):
                self.eval_rules_dict[','.join(all_params)] = _rules
         print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
@@ -257,9 +274,10 @@ class RulesFactory(object):
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
+"""   Use this block for testing this class """
 rows,cols = 50,1
-file_locParams="..\\..\\matrixOfParams.xlsx"
-file_locRules="..\\..\\BRMRules.xlsx"
+file_locParams="matrixOfParams.xlsx"
+file_locRules="BRMRulesInColumns.xlsx"
 
 param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
 
