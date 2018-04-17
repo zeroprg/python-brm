@@ -6,6 +6,7 @@ import numpy as np
 from theano.tensor import _shared
 from numpy import array
 import time
+import json
 from RuleEvaluator import RuleEvaluator
 
 # Global variables and rules defined as  functions 
@@ -93,14 +94,20 @@ class RulesFactory(object):
 
 
 
-    def setParameters(param_mtrx, rows):
+    def loadParametersFromJSON(json_str):
+        data = json.loads(json_str)
+        for key in data[0]:
+            (globals()[key+'_']) = []
+            for i in range(len(data)):
+                (globals()[key+'_']).append(data[i][key])
+
         # define all parameters:
-        STCC       = param_mtrx [0][0:rows]
-        Position_  = vector_to_matrix(np.arange(rows))
-        Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
-        Length_    = vector_to_matrix(param_mtrx [2][0:rows])
-        CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
-        Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
+        #STCC       = param_mtrx [0][0:rows]
+        #Position_  = vector_to_matrix(np.arange(rows))
+        #Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
+        #Length_    = vector_to_matrix(param_mtrx [2][0:rows])
+        #CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
+        #Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
 
     def conertToInt(s):
         ret = 0
@@ -274,25 +281,30 @@ class RulesFactory(object):
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
+
 """   Use this block for testing this class """
-rows,cols = 50,1
-file_locParams="matrixOfParams.xlsx"
-file_locRules="BRMRulesInColumns.xlsx"
-
-param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
-
-# define all parameters:
-STCC      = param_mtrx [0][0:rows]
-Position_  = vector_to_matrix(np.arange(rows))
-Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
-Length_    = vector_to_matrix(param_mtrx [2][0:rows])
-CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
-Hazard_ =    vector_to_matrix(param_mtrx [4][0:rows])
+if(__name__ == "__main__"):
+    rows,cols = 50,1
+    file_locParams="matrixOfParams.xlsx"
+    file_locRules="BRMRulesInColumns.xlsx"
 
 
-rf = RulesFactory(file_locRules,rows,cols)
-rf.show_log = False
-ret = rf.fireBRM()
-print('BRM result:')
-print('##########################################################################################################################')
-print(ret)
+    #Test with JSON array
+    RulesFactory.loadParametersFromJSON('[{"STCC": 1, "Position":1,"Length":34,"Weight":65, "CushionDB":"Y", "Hazard":"Y"}, {"STCC": 1, "Position":2,"Length":30,"Weight":60, "CushionDB":"Y", "Hazard":"N"}]')
+
+    #Test with Excell Spread Sheet define all parameters:
+    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
+    STCC      = param_mtrx [0][0:rows]
+    Position_  = vector_to_matrix(np.arange(rows))
+    Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
+    Length_    = vector_to_matrix(param_mtrx [2][0:rows])
+    CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
+    Hazard_ =    vector_to_matrix(param_mtrx [4][0:rows])
+
+
+    rf = RulesFactory(file_locRules,rows,cols)
+    rf.show_log = False
+    ret = rf.fireBRM()
+    print('BRM result:')
+    print('##########################################################################################################################')
+    print(ret)
