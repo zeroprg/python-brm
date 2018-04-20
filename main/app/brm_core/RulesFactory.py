@@ -204,6 +204,7 @@ class RulesFactory(object):
         parameters_row = 0
         _matrix=[]
         self.rule_names = []
+        rule = 'None'
         for row in range (sheet.nrows):
                 _row = []
                 #Exclude first column and last column with ErrorMessage
@@ -211,21 +212,22 @@ class RulesFactory(object):
                      val = sheet.cell_value(row,col)
                      if( col == 0 and row == 0 ): continue
                      if( not val or  val.strip() == '' ): # Empty cell
-                            _row.append('None') 
-                            continue
-                     if(col == 0 ) : 
-                         self.rule_names.append(val)
+                         _row.append('None') 
                          continue
-                     if( row == parameters_row): # read first row and consider it as header of parameters
-                        if( val == 'ErrorMessage'): 
-                            self.error_message_col = col
-                            self.error_message  = [] 
-                            continue
+                     if( col == 0 ): 
+			 rule = val	
+		         self.rule_names.append(val)
+                 	 continue
+                     if(row == parameters_row): # read first row and consider it as header of parameters
+                         if( val == 'ErrorMessage'): 
+                             self.error_message_col = col
+			     self.error_message = {}
+                             continue
                         params = val.split(',')
                         _row.append(params)
                      else:
                          if( col == self.error_message_col ):
-                             self.error_message.append(val)
+                             self.error_message[key] = val 
                              continue
                          for rule in RulesFactory._funct_dict: 
                              if (  val.find(rule) >= 0 ):
@@ -343,7 +345,7 @@ class RulesFactory(object):
                 elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
                     _ret = np.logical_not(_ret,_ret)
             normalizer += 1
-            print(key + " was failed: " )
+            print(key + " was failed: " + self.error_message[key])
             ret  +=  _ret*1 
         ret = ret/normalizer
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
@@ -372,5 +374,32 @@ if(__name__ == "__main__"):
 
     rf = RulesFactory(file_locRules,rows,cols)
     ret = rf.fireBRM()
-    print('############################################### BRM result ##############################################################')
+    print('########################################## BRM result ########################################################')
     print(ret)
+
+# Example usage in FaaS , rules are only evaluated 
+# invoke method called from index.py
+
+def invoke(args):
+  # print("################### Welcome to BRM engine ###################### ")
+    rows,cols = 50,1
+    file_locParams="matrixOfParams.xlsx"
+    file_locRules="BRMRulesInRows.xlsx"
+
+#Test with Excell Spread Sheet define all parameters: 
+    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
+    (globals()['STCC'])  = param_mtrx [0][0:rows]
+    (globals()['Position_'])  = RulesFactory.vector_to_matrix(np.arange(rows))
+    (globals()['Weight_'])    = RulesFactory.vector_to_matrix(param_mtrx [1][0:rows])
+    (globals()['Length_'])    = RulesFactory.vector_to_matrix(param_mtrx [2][0:rows])
+    (globals()['CushionDB_']) = RulesFactory.vector_to_matrix(param_mtrx [3][0:rows])
+    (globals()['Hazard_'])    = RulesFactory.vector_to_matrix(param_mtrx [4][0:rows])
+    rf = RulesFactory(file_locRules,rows,cols)
+  #  rf.show_log = False
+  # Test with JSON array this is is test only
+     #RulesFactory.loadParametersFromJSON(args)
+# body examle : '[{"STCC": 1, "Position":1,"Length":34,"Weight":65, "CushionDB":"Y", "Hazard":"Y"}, {"STCC": 1, "Position":2,"Length":30,"Weight":60, "CushionDB":"Y", "Hazard":"N"}]'
+     # STCC - is exceptional case
+    ret = rf.fireBRM()
+    return ret
+
