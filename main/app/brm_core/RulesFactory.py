@@ -347,7 +347,7 @@ class RulesFactory(object):
             normalizer += 1
             print(key + ' was failed: ' + self.error_message[key])
             ret  +=  _ret*1 
-        ret = ret/normalizer
+        ret = ret/normalizer * 100
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
@@ -373,9 +373,26 @@ if(__name__ == "__main__"):
 
 
     rf = RulesFactory(file_locRules,rows,cols)
+    print('########################################## BRM result ########################################################')   
     ret = rf.fireBRM()
-    print('########################################## BRM result ########################################################')
-    print(ret)
+    i,j,l, failed_count,completed_count  = 0,0,0,0,0
+    positions_f =  []
+    positions_ok = []
+    for res in ret:
+       if( res == 0 ): 
+           failed_count += 1 
+           positions_f.append(j)
+       else:
+          completed_count += 1 
+          positions_ok.append(j)
+       j += 1 
+
+    str_f = ''.join([str(x)+',' for x in positions_f]) 
+    str_ok = ''.join([str(x)+' with ' + str(int(ret[x][0])) + '% of success,'  for x in positions_ok]) 
+    print(" Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f)
+    print(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
+
+    #print(ret)
 
 # Example usage in FaaS , rules are only evaluated 
 # invoke method called from index.py
