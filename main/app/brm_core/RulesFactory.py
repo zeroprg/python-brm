@@ -204,7 +204,7 @@ class RulesFactory(object):
         parameters_row = 0
         _matrix=[]
         self.rule_names = []
-        rule = 'None'
+        rule_key = 'None'
         for row in range (sheet.nrows):
                 _row = []
                 #Exclude first column and last column with ErrorMessage
@@ -215,19 +215,19 @@ class RulesFactory(object):
                          _row.append('None') 
                          continue
                      if( col == 0 ): 
-			 rule = val	
-		         self.rule_names.append(val)
-                 	 continue
+                         rule_key = val	
+                         self.rule_names.append(val)
+                         continue
                      if(row == parameters_row): # read first row and consider it as header of parameters
                          if( val == 'ErrorMessage'): 
                              self.error_message_col = col
-			     self.error_message = {}
+                             self.error_message = {}
                              continue
-                        params = val.split(',')
-                        _row.append(params)
+                         params = val.split(',')
+                         _row.append(params)
                      else:
                          if( col == self.error_message_col ):
-                             self.error_message[key] = val 
+                             self.error_message[rule_key] = val 
                              continue
                          for rule in RulesFactory._funct_dict: 
                              if (  val.find(rule) >= 0 ):
@@ -345,7 +345,7 @@ class RulesFactory(object):
                 elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
                     _ret = np.logical_not(_ret,_ret)
             normalizer += 1
-            print(key + " was failed: " + self.error_message[key])
+            print(key + ' was failed: ' + self.error_message[key])
             ret  +=  _ret*1 
         ret = ret/normalizer
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
