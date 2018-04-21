@@ -93,14 +93,6 @@ class RulesFactory(object):
             print(self.eval_rules_dict)
 
 
-
-    def loadParametersFromJSON(json_str):
-        data = json.loads(json_str)
-        for key in data[0]:
-            (globals()[key+'_']) = []
-            for i in range(len(data)):
-                (globals()[key+'_']).append(data[i][key])
-
         # define all parameters:
         #STCC       = param_mtrx [0][0:rows]
         #Position_  = vector_to_matrix(np.arange(rows))
@@ -108,6 +100,22 @@ class RulesFactory(object):
         #Length_    = vector_to_matrix(param_mtrx [2][0:rows])
         #CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
         #Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
+    def loadParametersFromJSON(json_str):
+        data = json.loads(json_str)
+        for key in data[0]:
+            key_ = key
+            if(not (key in ['STCC'])): key_ = key +'_'
+            (globals()[key_]) = []
+            temp = []
+            for i in range(len(data)):
+                val = data[i][key]
+                if(not( key in ['STCC'])):
+                    if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
+                temp.append(val)
+            if(not( key in ['STCC'])):
+                (globals()[key_]) =  RulesFactory.vector_to_matrix(temp)
+            else:
+                (globals()[key_]) = temp
 
     def conertToInt(s):
         ret = 0
@@ -354,22 +362,22 @@ class RulesFactory(object):
 
 """   Use this block for testing this class """
 if(__name__ == "__main__"):
-    rows,cols = 50,1
+    rows,cols = 2,1
     file_locParams="matrixOfParams.xlsx"
     #file_locRules="BRMRulesInColumns.xlsx"
     file_locRules="BRMRulesInRows.xlsx"
 
     #Test with JSON array
-    RulesFactory.loadParametersFromJSON('[{"STCC": 1, "Position":1,"Length":34,"Weight":65, "CushionDB":"Y", "Hazard":"Y"}, {"STCC": 1, "Position":2,"Length":30,"Weight":60, "CushionDB":"Y", "Hazard":"N"}]')
+    RulesFactory.loadParametersFromJSON('[{"STCC": "48ttrtt", "Position":1,"Length":34,"Weight":65, "CushionDB":"Y"}, {"STCC": "49422h", "Position":2,"Length":30,"Weight":60, "CushionDB":"Y"}]')
 
     #Test with Excell Spread Sheet define all parameters:
-    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
-    STCC      = param_mtrx [0][0:rows]
-    Position_  = RulesFactory.vector_to_matrix(np.arange(rows))
-    Weight_    = RulesFactory.vector_to_matrix(param_mtrx [1][0:rows])
-    Length_    = RulesFactory.vector_to_matrix(param_mtrx [2][0:rows])
-    CushionDB_ = RulesFactory.vector_to_matrix(param_mtrx [3][0:rows])
-    Hazard_ =    RulesFactory.vector_to_matrix(param_mtrx [4][0:rows])
+#    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
+#    STCC      = param_mtrx [0][0:rows]
+#    Position_  = RulesFactory.vector_to_matrix(np.arange(rows))
+#    Weight_    = RulesFactory.vector_to_matrix(param_mtrx [1][0:rows])
+#    Length_    = RulesFactory.vector_to_matrix(param_mtrx [2][0:rows])
+#    CushionDB_ = RulesFactory.vector_to_matrix(param_mtrx [3][0:rows])
+   # Hazard_ =    RulesFactory.vector_to_matrix(param_mtrx [4][0:rows])
 
 
     rf = RulesFactory(file_locRules,rows,cols)
@@ -379,7 +387,7 @@ if(__name__ == "__main__"):
     positions_f =  []
     positions_ok = []
     for res in ret:
-       if( res == 0 ): 
+       if( res[0] == 0 ): 
            failed_count += 1 
            positions_f.append(j)
        else:
@@ -392,7 +400,7 @@ if(__name__ == "__main__"):
     print(" Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f)
     print(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
 
-    #print(ret)
+    print(ret)
 
 # Example usage in FaaS , rules are only evaluated 
 # invoke method called from index.py
