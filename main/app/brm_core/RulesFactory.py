@@ -29,7 +29,8 @@ class RulesFactory(object):
 
     # Global variables and rules defined as  functions 
 #================================================================================================
-
+    #set true if parameters already loaded
+    is_params_loaded = False
 
     _funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
     _constant_dict = {'Y': 1, 'N': 0}
@@ -100,7 +101,7 @@ class RulesFactory(object):
         #Length_    = vector_to_matrix(param_mtrx [2][0:rows])
         #CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
         #Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
-    def loadParametersFromJSON(json_str):
+    def loadParametersFromJSON(json_str):        
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
@@ -116,6 +117,7 @@ class RulesFactory(object):
                 (globals()[key_]) =  RulesFactory.vector_to_matrix(temp)
             else:
                 (globals()[key_]) = temp
+        RulesFactory.is_params_loaded = True
 
     def conertToInt(s):
         ret = 0
@@ -359,6 +361,25 @@ class RulesFactory(object):
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
+    def collect_rule_statistic(ret):
+        i,j,l, failed_count,completed_count  = 0,0,0,0,0
+        positions_f =  []
+        positions_ok = []
+        for res in ret:
+           if( res[0] == 0 ): 
+               failed_count += 1 
+               positions_f.append(j)
+           else:
+              completed_count += 1 
+              positions_ok.append(j)
+           j += 1 
+
+        str_f = ''.join([str(x)+',' for x in positions_f]) 
+        str_ok = ''.join([str(x)+' with ' + str(int(ret[x][0])) + '% of success,'  for x in positions_ok]) 
+        html =  "<html><p> Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f + " </p>"
+        html += "<p> Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok + " </p> </html>"
+        print(html)
+        return html
 
 """   Use this block for testing this class """
 if(__name__ == "__main__"):
@@ -401,6 +422,8 @@ if(__name__ == "__main__"):
     print(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
 
     print(ret)
+
+
 
 # Example usage in FaaS , rules are only evaluated 
 # invoke method called from index.py
