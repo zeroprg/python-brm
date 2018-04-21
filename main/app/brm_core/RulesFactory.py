@@ -314,7 +314,15 @@ class RulesFactory(object):
                self.eval_rules_dict[self.rule_names[i-1]] = _rules
         print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
 
-
+    def log_error_message(self, key, ret):
+        if not self.show_log : return ''
+        postions = ''
+        msg = ''
+        i = 0
+        if ret.any() ==  0 : 
+            msg = key  + ': ' + self.error_message[key] + ' in positions: ' + postions
+        print(msg)
+        return msg
 
     def evaluate_none_arg_rules(self,key):
         rule_failed = 0
@@ -331,6 +339,7 @@ class RulesFactory(object):
      # Basic method to call all rules once
     def fireBRM(self):       
         start_time = time.time()
+        self.errors_msg = ''
         # loop over the all rules in evuluated rules dictionary
         ret = 0.
         normalizer = 0
@@ -355,13 +364,13 @@ class RulesFactory(object):
                 elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
                     _ret = np.logical_not(_ret,_ret)
             normalizer += 1
-            print(key + ' was failed: ' + self.error_message[key])
+            self.errors_msg += self.log_error_message(key, _ret) + '\n'          
             ret  +=  _ret*1 
         ret = ret/normalizer * 100
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
-    def collect_rule_statistic(ret):
+    def collect_rule_statistic(self,ret):
         i,j,l, failed_count,completed_count  = 0,0,0,0,0
         positions_f =  []
         positions_ok = []
@@ -374,10 +383,16 @@ class RulesFactory(object):
               positions_ok.append(j)
            j += 1 
 
-        str_f = ''.join([str(x)+',' for x in positions_f]) 
+        str_f = ' '.join([str(x)+',' for x in positions_f]) 
         str_ok = ''.join([str(x)+' with ' + str(int(ret[x][0])) + '% of success,'  for x in positions_ok]) 
-        html =  "<html><p> Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f + " </p>"
-        html += "<p> Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok + " </p> </html>"
+        html =   "<html><p> <red> " +  self.errors_msg + ' </red> </p> '
+        print( self.errors_msg )
+        msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
+        print( msg )
+        html +=  "<html><p><b>  " + msg + " </b></p>"
+        msg =  "Total: " + str(completed_count)  + " car with rules satisfied in positions: " + str_ok 
+        print( msg )
+        html += "<p><b> " + msg + " </b></p></html>"
         print(html)
         return html
 
