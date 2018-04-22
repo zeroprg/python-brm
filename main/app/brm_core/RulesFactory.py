@@ -118,6 +118,7 @@ class RulesFactory(object):
             else:
                 (globals()[key_]) = temp
         RulesFactory.is_params_loaded = True
+        return len(data)
 
     def conertToInt(s):
         ret = 0
