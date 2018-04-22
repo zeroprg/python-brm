@@ -12,5 +12,19 @@
     "Length": 30,
     "Weight": 60,
     "CushionDB": "Y"
-  }
+  },
+  {
+    "STCC": "422h",
+    "Position": 3,
+    "Length": 35,
+    "Weight": 6,
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "4422h",
+    "Position": 4,
+    "Length": 34,
+    "Weight": 6,
+    "CushionDB": "Y"
+  }  
 ]

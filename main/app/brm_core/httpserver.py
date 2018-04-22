@@ -61,8 +61,8 @@ def upload_brm_file():
     fireBRM =''
     if( sel_rules and sel_params): 
         fireBRM = '<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>'
-        
-    print(fireBRM) 
+    if( sel_params ):
+        sel_params_bttn = '<input type="button"  value="select" onclick="window.location.href=\'params\'"/>'
     return '''
     <!doctype html>
     <title>Upload a new BRM rule as Excell spread sheet file</title>
@@ -71,7 +71,7 @@ def upload_brm_file():
       <p><input type=file name=file>
       <input type=submit value="Upload and Fire BRM">
     <br><br>
-    <p>Rules:<b>''' +sel_rules+ ''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b></p>
+    <p>Rules:<b>''' +sel_rules+ ''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +''' </p>
     <br><br>
     ''' + fireBRM +  '''
     </form>
@@ -111,7 +111,9 @@ def post_parameters_as_JSON_file():
     path_to_select_rules ='/'
     if( sel_rules and sel_params): 
         fireBRM =  '<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>'
-    else: fireBRM = '<input type="button"  value="Next..." onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
+    next_bttn=''
+    if( sel_params ):
+        next_bttn = '<input type="button"  value="select..." onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
     return '''
     <!doctype html>
     <title>Upload a new BRM rule as Excell spread sheet file</title>
@@ -120,7 +122,7 @@ def post_parameters_as_JSON_file():
       <p><input type=file name=file>
       <input type=submit value="Upload json">
     <br><br> 
-    <p>Rules:<b>'''+sel_rules+''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b></p>
+    <p>Rules:<b>'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p> <p>  Parameters: <b>'''+ sel_params +''' </b></p>
     <br><br>
     ''' + fireBRM +  '''
     </form>
@@ -138,15 +140,17 @@ def fireBRM():
                 #Prepare params
            rows =  RulesFactory.loadParametersFromJSON(str)
     rf = cache.get('rf')
+    msg =''
     if(not rf):
         rf = RulesFactory(sel_rules ,rows,cols)
+        rf.show_log = True
         ret = rf.fireBRM()
-    return rf.collect_rule_statistic(ret)
+        msg = rf.collect_rule_statistic(ret)
+    return msg
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                                filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if (__name__ == '__main__'):
     app.run(debug=True) 

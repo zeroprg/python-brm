@@ -34,7 +34,7 @@ class RulesFactory(object):
 
     _funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
     _constant_dict = {'Y': 1, 'N': 0}
-    _boolean_operations_dict = {'STCC,Position':'NOT'} #' np.logical_and, np.logical_or, np.logical_xor 
+    _boolean_operations_dict = {} #' np.logical_and, np.logical_or, np.logical_xor 
 
 
 
@@ -46,21 +46,26 @@ class RulesFactory(object):
             val = val.replace('sum(' + arg + ')', '(' + arg + ').sum()')
             match = re.search(r'(?<=sum\()\w+', val)
         return val
-
-# find any occurance of elements from search_list in string in position 0
-    def find(string): 
-        ret = False
-        for arg in ('48', '49'):
-           if( string.find(arg) == 0 ): 
-               ret = True
-               break
+##############################################################################
+#          This is example of hardcoded exceptional rule
+##############################################################################
+# find any occurance of elements start with (48,49) in begining of  string only for  position <5 and fail the rule if found :  return False
+    def find(string, position): 
+        ret = True
+        if( position < 5):
+            for arg in ('48', '49'):
+               if( string.find(arg) == 0 ): 
+                   ret = False
+                   break
+        else: ret = True 
         return ret
 
 # define function to find as global variable
     vfind = np.vectorize(find)
 
 # test vfind 
-#print(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds']))
+#print(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
+
 
 # special dictionary which converts written  functions to python notations
     conv_rule_dict = {'Sum_of':  conv_rule1}
@@ -105,15 +110,15 @@ class RulesFactory(object):
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
-            if(not (key in ['STCC'])): key_ = key +'_'
+            if(not (key in ('STCC','Position'))): key_ = key +'_'
             (globals()[key_]) = []
             temp = []
             for i in range(len(data)):
                 val = data[i][key]
-                if(not( key in ['STCC'])):
+                if(not( key in ('STCC','Position'))):
                     if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
                 temp.append(val)
-            if(not( key in ['STCC'])):
+            if(not( key in ('STCC','Position'))):
                 (globals()[key_]) =  RulesFactory.vector_to_matrix(temp)
             else:
                 (globals()[key_]) = temp
@@ -316,13 +321,12 @@ class RulesFactory(object):
         print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
 
     def log_error_message(self, key, ret):
-        if not self.show_log : return ''
-        postions = ''
-        msg = ''
-        i = 0
-        if ret.any() ==  0 : 
-            msg = key  + ': ' + self.error_message[key] + ' in positions: ' + postions
-        print(msg)
+        if (not self.show_log): return ''        
+        msg=''
+        print(ret)        
+        if( any(r[0] == 0 for r in ret)):
+            msg = key  + ': ' + self.error_message[key] 
+            print(msg)
         return msg
 
     def evaluate_none_arg_rules(self,key):
@@ -334,7 +338,8 @@ class RulesFactory(object):
              # do error log printing
              if( r == 0 ): rule_failed += 1
              ret.append([r])
-        if(rule_failed > 0 ): print('Rule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
+        if(self.show_log and rule_failed > 0 ): 
+            print('Rule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
         return ret
 
      # Basic method to call all rules once
@@ -344,18 +349,20 @@ class RulesFactory(object):
         # loop over the all rules in evuluated rules dictionary
         ret = 0.
         normalizer = 0
-        for key,rules in  self.eval_rules_dict.items():
-            _ret = 1
+        ones = np.ones((self.rows,1))
+        for key,rules in  self.eval_rules_dict.items():            
+            _ret = ones
             for rule_tupil in rules:
                 #get value from rule tupil
                 rule = rule_tupil[0]
                 rule_params = rule_tupil[1]
                 # all arguments are global and must end with '_' because there is symbolic arg with the same name
                 if( not isinstance(rule_params, (tuple)) ): # if not list
-                        rule_ret = rule.evaluate(rule_params)
-                else:
-                        rule_ret = rule.evaluate(*rule_params)
-                _ret = _ret * rule_ret
+                     # 1 argument rule (compare to 0)  
+                   rule_ret = rule.evaluate(rule_params)
+                else: # 2 arguments rule
+                   rule_ret = rule.evaluate(*rule_params)
+                _ret =  rule_ret *_ret
             if( key in self.rules_immediate_eval_dict ) :  
                 _ret = _ret * self.evaluate_none_arg_rules(key)
             if( key in RulesFactory._boolean_operations_dict ): 
@@ -367,6 +374,7 @@ class RulesFactory(object):
             normalizer += 1
             self.errors_msg += self.log_error_message(key, _ret) + '\n'          
             ret  +=  _ret*1 
+            
         ret = ret/normalizer * 100
         print("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
@@ -399,13 +407,42 @@ class RulesFactory(object):
 
 """   Use this block for testing this class """
 if(__name__ == "__main__"):
-    rows,cols = 2,1
-    file_locParams="matrixOfParams.xlsx"
+    rows,cols = 0,1
+    #file_locParams="matrixOfParams.xlsx"
     #file_locRules="BRMRulesInColumns.xlsx"
     file_locRules="BRMRulesInRows.xlsx"
 
-    #Test with JSON array
-    RulesFactory.loadParametersFromJSON('[{"STCC": "48ttrtt", "Position":1,"Length":34,"Weight":65, "CushionDB":"Y"}, {"STCC": "49422h", "Position":2,"Length":30,"Weight":60, "CushionDB":"Y"}]')
+        #Test with JSON array
+    rows = RulesFactory.loadParametersFromJSON('''[
+      {
+        "STCC": "48ttrtt",
+        "Position": 1,
+        "Length": 34,
+        "Weight": 65,
+        "CushionDB": "Y"
+      },
+      {
+        "STCC": "49422h",
+        "Position": 2,
+        "Length": 30,
+        "Weight": 60,
+        "CushionDB": "Y"
+      },
+      {
+        "STCC": "422h",
+        "Position": 2,
+        "Length": 35,
+        "Weight": 6,
+        "CushionDB": "Y"
+      },
+      {
+        "STCC": "4422h",
+        "Position": 2,
+        "Length": 34,
+        "Weight": 6,
+        "CushionDB": "Y"
+      }  
+    ]''')
 
     #Test with Excell Spread Sheet define all parameters:
 #    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
@@ -418,6 +455,7 @@ if(__name__ == "__main__"):
 
 
     rf = RulesFactory(file_locRules,rows,cols)
+    rf.show_log = True
     print('########################################## BRM result ########################################################')   
     ret = rf.fireBRM()
     i,j,l, failed_count,completed_count  = 0,0,0,0,0
@@ -438,32 +476,3 @@ if(__name__ == "__main__"):
     print(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
 
     print(ret)
-
-
-
-# Example usage in FaaS , rules are only evaluated 
-# invoke method called from index.py
-
-def invoke(args):
-  # print("################### Welcome to BRM engine ###################### ")
-    rows,cols = 50,1
-    file_locParams="matrixOfParams.xlsx"
-    file_locRules="BRMRulesInRows.xlsx"
-
-#Test with Excell Spread Sheet define all parameters: 
-    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)
-    (globals()['STCC'])  = param_mtrx [0][0:rows]
-    (globals()['Position_'])  = RulesFactory.vector_to_matrix(np.arange(rows))
-    (globals()['Weight_'])    = RulesFactory.vector_to_matrix(param_mtrx [1][0:rows])
-    (globals()['Length_'])    = RulesFactory.vector_to_matrix(param_mtrx [2][0:rows])
-    (globals()['CushionDB_']) = RulesFactory.vector_to_matrix(param_mtrx [3][0:rows])
-    (globals()['Hazard_'])    = RulesFactory.vector_to_matrix(param_mtrx [4][0:rows])
-    rf = RulesFactory(file_locRules,rows,cols)
-  #  rf.show_log = False
-  # Test with JSON array this is is test only
-     #RulesFactory.loadParametersFromJSON(args)
-# body examle : '[{"STCC": 1, "Position":1,"Length":34,"Weight":65, "CushionDB":"Y", "Hazard":"Y"}, {"STCC": 1, "Position":2,"Length":30,"Weight":60, "CushionDB":"Y", "Hazard":"N"}]'
-     # STCC - is exceptional case
-    ret = rf.fireBRM()
-    return ret
-
