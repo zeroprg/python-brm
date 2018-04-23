@@ -51,11 +51,11 @@ class RulesFactory(object):
 ##############################################################################
 # find any occurance of elements start with (48,49) in begining of  string only for  position <5 and fail the rule if found :  return False
     def find(string, position): 
-        ret = True
+        ret = False
         if( position < 5):
             for arg in ('48', '49'):
                if( string.find(arg) == 0 ): 
-                   ret = False
+                   ret = True
                    break
         else: ret = True 
         return ret
@@ -111,7 +111,11 @@ class RulesFactory(object):
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
-            if(not (key in except_params)): key_ = key +'_'
+            if(not (key in except_params)): 
+                key_ = key +'_'
+            else:
+                (globals()[key+'_']) = [] #Make params  like this 
+
             (globals()[key_]) = []
             temp = []
             for i in range(len(data)):
@@ -119,10 +123,10 @@ class RulesFactory(object):
                 if(not( key in except_params)):
                     if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
                 temp.append(val)
-            if(not( key in ('STCC','Position'))):
-                (globals()[key_]) =  RulesFactory.vector_to_matrix(temp)
-            else:
-                (globals()[key_]) = temp
+            #if(not( key in except_params)):
+            (globals()[key+'_']) =  RulesFactory.vector_to_matrix(temp)
+            if(key in except_params):
+                (globals()[key]) = temp
         RulesFactory.is_params_loaded = True
         return len(data)
 
@@ -170,7 +174,7 @@ class RulesFactory(object):
         args = []
         for arg in all_params:
             if( rule.find(arg) >=0 ): args.append(arg)
-        if( not args ): raise Exception( 'Rule: "' +  rule+ '"  must have at least one argument. To fix it define argument in first row of spreadsheet ')
+        if( not args ): raise Exception( 'Rule: "' +  rule+ '"  must have at least one argument from the header of spread shhet.  To fix it define argument in first row of spreadsheet ')
         return args
     
     # This is static method used as helper to download parameters from spreadsheet for BRM evaluator. 
@@ -421,35 +425,39 @@ if(__name__ == "__main__"):
 
         #Test with JSON array
     rows = RulesFactory.loadParametersFromJSON('''[
-      {
-        "STCC": "48ttrtt",
-        "Position": 1,
-        "Length": 34,
-        "Weight": 65,
-        "CushionDB": "Y"
-      },
-      {
-        "STCC": "49422h",
-        "Position": 2,
-        "Length": 30,
-        "Weight": 60,
-        "CushionDB": "Y"
-      },
-      {
-        "STCC": "422h",
-        "Position": 2,
-        "Length": 35,
-        "Weight": 6,
-        "CushionDB": "Y"
-      },
-      {
-        "STCC": "4422h",
-        "Position": 2,
-        "Length": 34,
-        "Weight": 6,
-        "CushionDB": "Y"
-      }  
-    ]''')
+              {
+                "STCC": "48ttrtt",
+                "Position": 1,
+                "Length": 34,
+                "Weight": 65,
+                "Hazardous":"N",
+                "CushionDB": "Y"
+              },
+              {
+                "STCC": "49422h",
+                "Position": 2,
+                "Length": 30,
+                "Weight": 60,
+                "Hazardous":"N",
+                "CushionDB": "Y"
+              },
+              {
+                "STCC": "422h",
+                "Position": 2,
+                "Length": 35,
+                "Weight": 6,
+                "Hazardous":"Y",
+                "CushionDB": "Y"
+              },
+              {
+                "STCC": "4422h",
+                "Position": 2,
+                "Length": 34,
+                "Weight": 6,
+                "Hazardous":"Y",
+                "CushionDB": "Y"
+              }  
+            ]''')
 
     #Test with Excell Spread Sheet define all parameters:
 #    param_mtrx = RulesFactory.loadMatrixFromExcellAsConstants(file_locParams)

@@ -36,14 +36,20 @@ def upload_brm_file():
             filename = secure_filename(file.filename)
             print('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            #rf = RulesFactory(app.config['UPLOAD_FOLDER']+'/' + file.filename,rows,cols)
-            #cache['rf'] = rf
+            # load parameters file (could be JSOn  or CSV file)
+            file= open(sel_params,"r+")
+            str = file.read()
+            # load JSON array
+            rows =  RulesFactory.loadParametersFromJSON(str)
+            # load BRM rules
+            rf = RulesFactory(app.config['UPLOAD_FOLDER']+'/' + filename,rows,1)
+            cache['rf'] = rf
             cache['selected-rule'] = filename
             # for browser, add 'redirect' function on top of 'url_for'
             #href = url_for('uploaded_file',filename=filename)
-            #rf.show_log = True
-            #ret = rf.fireBRM()
-            #rs = rf.collect_rule_statistic(ret)
+            rf.show_log = True
+            ret = rf.fireBRM()
+            rs = rf.collect_rule_statistic(ret)
             return rs
  # Populate html on GET request
     hrefs = generate_file_list('xlsx')
@@ -68,8 +74,8 @@ def upload_brm_file():
     <title>Upload a new BRM rule as Excell spread sheet file</title>
     <h1>Step2: Upload a new BRM rule as Excell spread sheet file</h1>''' + hrefs_li +  '''
     <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-      <input type=submit value="Upload">
+      <p><input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
+      <input id="upldbttn" style="visibility:hidden" type=submit value="Upload and FireBRM">
     <br><br>
     <p>Rules:<b>''' +sel_rules+ ''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +''' </p>
     <br><br>
@@ -119,8 +125,8 @@ def post_parameters_as_JSON_file():
     <title>Upload a new BRM rule as Excell spread sheet file</title>
     <h1>Step1: Upload a parmeters as JSON file</h1>''' + hrefs_li +  '''
     <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-      <input type=submit value="Upload json">
+      <p><input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
+      <input id="upldbttn" style="visibility:hidden" type=submit value="Upload">
     <br><br> 
     <p>Rules:<b>'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p> <p>  Parameters: <b>'''+ sel_params +''' </b></p>
     <br><br>
