@@ -106,16 +106,17 @@ class RulesFactory(object):
         #Length_    = vector_to_matrix(param_mtrx [2][0:rows])
         #CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
         #Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
-    def loadParametersFromJSON(json_str):        
+
+    def loadParametersFromJSON(json_str, except_params=('STCC','Position')):        
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
-            if(not (key in ('STCC','Position'))): key_ = key +'_'
+            if(not (key in except_params)): key_ = key +'_'
             (globals()[key_]) = []
             temp = []
             for i in range(len(data)):
                 val = data[i][key]
-                if(not( key in ('STCC','Position'))):
+                if(not( key in except_params)):
                     if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
                 temp.append(val)
             if(not( key in ('STCC','Position'))):
@@ -258,37 +259,7 @@ class RulesFactory(object):
     # check if the rule has function  which required some preprocessing
     # for example check_first_2_characters_of(...) . If it has fire rule preprocessor to convert it to vfind(...)
     # This rule requiered translation and  data preparation before firing it 
-# both sides left and right must be numeric
-
-
-
-    def EvaluateAllRulesByColumns(self):
-        # Evaluate ( convert the rules from strings to real functions)
-        start_time = time.time()
-        for j in range(len(self.rules_mtrx[0])):
-            _rules = []
-            for i in range(1,len(self.rules_mtrx)):
-                all_params = self.rules_mtrx[0][j]
-                rule = self.rules_mtrx[i][j]
-                if( not rule or rule == 'None' ): continue
-                operand = self.find_operand(rule,['<','>','>=','<=','=']) # move to translate rule
-                if( not operand ):
-                    # add no parameters rules to immediate evaluation rule's dictionary by key where key is point to spreadsheet column
-                    self.rules_immediate_eval_dict[','.join(all_params)] = rule
-                else: 
-                    params = self.populate_rule_args(rule,all_params)
-                    # add Rule function , rule's paramters pair to tupil
-                    if( len(params) == 1 ) :
-                        rule_params =  (globals()[params[0]+'_'])
-                    else:
-                        rule_params = eval('_,'.join(params) + '_')
-                    pair = rule.split(operand)
-                    rule_left = pair[0]
-                    rule_right= pair[1]
-                    _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,self.rows,self.cols), rule_params) )
-            if( len(_rules)>0 ):
-               self.eval_rules_dict[','.join(all_params)] = _rules
-        print("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
+    # both sides left and right must be numeric
 
     def EvaluateAllRulesByRows(self):
         # Evaluate ( convert the rules from strings to real functions)
@@ -326,6 +297,7 @@ class RulesFactory(object):
         print(ret)        
         if( any(r[0] == 0 for r in ret)):
             msg = key  + ': ' + self.error_message[key] 
+            self.errors_msg += msg + '<br><br>'
             print(msg)
         return msg
 
@@ -372,7 +344,7 @@ class RulesFactory(object):
                 elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
                     _ret = np.logical_not(_ret,_ret)
             normalizer += 1
-            self.errors_msg += self.log_error_message(key, _ret) + '\n'          
+            self.log_error_message(key, _ret)     
             ret  +=  _ret*1 
             
         ret = ret/normalizer * 100
@@ -380,29 +352,64 @@ class RulesFactory(object):
         return ret
 
     def collect_rule_statistic(self,ret):
-        i,j,l, failed_count,completed_count  = 0,0,0,0,0
+        i,j,l, failed_count,completed_50_count,completed_75_count,completed_100_count,completed_ok_count  = 0,0,0,0,0,0,0,0
         positions_f =  []
+        positions_50 = []
+        positions_75 = []
+        positions_100 = []
         positions_ok = []
         for res in ret:
-           if( res[0] == 0 ): 
+           print(res)
+           if( res[0] == 0): 
                failed_count += 1 
                positions_f.append(j)
+           elif(res[0] <50):
+              completed_50_count += 1 
+              positions_50.append(j)
+           elif(res[0] <75):
+              completed_75_count += 1 
+              positions_75.append(j)
+           elif(res[0] <100):
+              completed_100_count += 1 
+              positions_100.append(j)
            else:
-              completed_count += 1 
+              completed_ok_count += 1 
               positions_ok.append(j)
+
+
            j += 1 
 
-        str_f = ' '.join([str(x)+',' for x in positions_f]) 
-        str_ok = ''.join([str(x)+' with ' + str(int(ret[x][0])) + '% of success,'  for x in positions_ok]) 
-        html =   "<html><p> <red> " +  self.errors_msg + ' </red> </p> '
+        str_f =  ' '.join([str(x)+'/'+str(int(ret[x][0])) + '%, ' for x in positions_f]) 
+        str_50 = ' '.join([str(x)+'/'+str(int(ret[x][0])) + '%, ' for x in positions_50]) 
+        str_75 = ' '.join([str(x)+'/'+str(int(ret[x][0])) + '%, ' for x in positions_75]) 
+        str_100 =' '.join([str(x)+'/'+str(int(ret[x][0])) + '%,  ' for x in positions_100]) 
+        str_ok = ' '.join([str(x) + ', '  for x in positions_ok]) 
+
+        html = '<html><h1> This  is BRM statistic: </h1>'
+        html +='<p  style="color:red;"><b>' +  self.errors_msg + '</b> </p> '
         print( self.errors_msg )
-        msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
-        print( msg )
-        html +=  "<html><p><b>  " + msg + " </b></p>"
-        msg =  "Total: " + str(completed_count)  + " car with rules satisfied in positions: " + str_ok 
-        print( msg )
-        html += "<p><b> " + msg + " </b></p></html>"
-        print(html)
+        if( str_f ):
+            msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
+            print( msg )
+            html +=  '<p><b> Total: <span style="color:red;"> ' + str(failed_count)  + '</span> car(s) with all rules failed in positions: <span style="color:red;">' + str_f  + '</span></b></p>'
+        if( str_50 ):
+            msg =  "Total: " + str(completed_50_count)  + " car failed in positions: " + str_50
+            print( msg )
+            html +=  '<p><b> Total: <span style="color:orange;"> ' + str(completed_50_count)  + '</span> car(s) (position/rules completed rate): <span style="color:orange;">' + str_50  + '</span></b></p>'
+        if( str_75 ):
+            msg =  "Total: " + str(completed_75_count)  + " car failed in positions: " + str_75
+            print( msg )
+            html +=  '<p><b> Total: <span style="color:orange;"> ' + str(completed_75_count)  + '</span> car(s) (position/rules completed rate): <span style="color:orange;">' + str_75  + '</span></b></p>'
+        if( str_100 ):
+            msg =  "Total: " + str(completed_100_count)  + " car failed in positions: " + str_100 
+            print( msg )
+            html +=  '<p><b> Total: <span style="color:blue;"> ' + str(completed_100_count)  + '</span> car(s) (position/rules completed rate): <span style="color:blue;">' + str_100  + '</span></b></p>'
+        if( str_ok ):
+            msg =  "Total: " + str(completed_ok_count)  + " car with rules satisfied in positions: " + str_ok 
+            print( msg )
+            html +=  '<p><b> Total: <span style="color:green;"> ' + str(completed_ok_count)  + '</span> car(s)  with all rules completed in positions: <span style="color:green;">' + str_ok  + ' has 100% success</span></b></p>'
+        html += "</html>"
+        #print(html)
         return html
 
 """   Use this block for testing this class """
@@ -458,6 +465,8 @@ if(__name__ == "__main__"):
     rf.show_log = True
     print('########################################## BRM result ########################################################')   
     ret = rf.fireBRM()
+    rf.collect_rule_statistic(ret)
+
     i,j,l, failed_count,completed_count  = 0,0,0,0,0
     positions_f =  []
     positions_ok = []

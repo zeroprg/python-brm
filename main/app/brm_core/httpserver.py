@@ -36,14 +36,14 @@ def upload_brm_file():
             filename = secure_filename(file.filename)
             print('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            rf = RulesFactory(app.config['UPLOAD_FOLDER']+'/' + file.filename,rows,cols)
-            cache['rf'] = rf
+            #rf = RulesFactory(app.config['UPLOAD_FOLDER']+'/' + file.filename,rows,cols)
+            #cache['rf'] = rf
             cache['selected-rule'] = filename
             # for browser, add 'redirect' function on top of 'url_for'
             #href = url_for('uploaded_file',filename=filename)
-            rf.show_log = True
-            ret = rf.fireBRM()
-            rs = rf.collect_rule_statistic(ret)
+            #rf.show_log = True
+            #ret = rf.fireBRM()
+            #rs = rf.collect_rule_statistic(ret)
             return rs
  # Populate html on GET request
     hrefs = generate_file_list('xlsx')
@@ -69,7 +69,7 @@ def upload_brm_file():
     <h1>Step2: Upload a new BRM rule as Excell spread sheet file</h1>''' + hrefs_li +  '''
     <form action="" method=post enctype=multipart/form-data>
       <p><input type=file name=file>
-      <input type=submit value="Upload and Fire BRM">
+      <input type=submit value="Upload">
     <br><br>
     <p>Rules:<b>''' +sel_rules+ ''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +''' </p>
     <br><br>
