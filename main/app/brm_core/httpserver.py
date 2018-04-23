@@ -42,7 +42,8 @@ def upload_brm_file():
             # load JSON array
             rows =  RulesFactory.loadParametersFromJSON(str)
             # load BRM rules
-            rf = RulesFactory(app.config['UPLOAD_FOLDER']+'/' + filename,rows,1)
+            filename = app.config['UPLOAD_FOLDER']+'/' + filename
+            rf = RulesFactory(filename,rows,1)
             cache['rf'] = rf
             cache['selected-rule'] = filename
             # for browser, add 'redirect' function on top of 'url_for'
