@@ -24,6 +24,17 @@ def allowed_file(filename):
   # this has changed from the original example because the original did not work for me
     return filename[-4:].lower() in ALLOWED_EXTENSIONS
 
+def prepare_params(filename):
+    file_ext = filename[-4:].lower()
+    # Prepare parameters
+    if(file_ext == 'json'):
+        file = open(filename,"r+")
+        str  = file.read()
+        rows = RulesFactory.load_params_from_json(str)
+    else:
+        rows = RulesFactory.load_params_from_csv(filename)
+    return rows
+
 @app.route('/', methods=['GET','POST'])
 def upload_brm_file():
     sel_params = cache.get('selected-params', '')
@@ -32,17 +43,16 @@ def upload_brm_file():
     if request.method == 'POST':
         file = request.files['file']
         file_ext = file.filename[-4:].lower()
-        if file and file_ext == 'xlsx':
+        if( file and file_ext == 'xlsx' ):
             filename = secure_filename(file.filename)
             print('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # load parameters file (could be JSOn  or CSV file)
-            file= open(sel_params,"r+")
-            str = file.read()
-            # load JSON array
-            rows =  RulesFactory.loadParametersFromJSON(str)
+            filename = app.config['UPLOAD_FOLDER'] +'/' + filename
+
+            #Prepare params (load them from file: sel_params)
+            rows = prepare_params(sel_params)
+
             # load BRM rules
-            filename = app.config['UPLOAD_FOLDER']+'/' + filename
             rf = RulesFactory(filename,rows,1)
             cache['rf'] = rf
             cache['selected-rule'] = filename
@@ -89,16 +99,16 @@ def post_parameters_as_JSON_file():
     if request.method == 'POST':
         file = request.files['file']
         file_ext = file.filename[-4:].lower()
-        if file and file_ext == 'json':
+        if (file and (file_ext == 'json' or file_ext == '.csv')):
             filename = secure_filename(file.filename)
             print('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             filename = app.config['UPLOAD_FOLDER']+'/' + file.filename
-            file= open(filename,"r+")
-            str = file.read()
             cache['selected-params'] = filename
-              #Test with JSON array
-            RulesFactory.loadParametersFromJSON(str)
+
+            #Prepare params (load them from file)
+            rows = prepare_params(filename)
+
             # for browser, add 'redirect' function on top of 'url_for'
             #href = url_for('uploaded_file',filename=filename)
             return redirect(url_for('upload_brm_file'))
@@ -124,7 +134,7 @@ def post_parameters_as_JSON_file():
     return '''
     <!doctype html>
     <title>Upload a new BRM rule as Excell spread sheet file</title>
-    <h1>Step1: Upload a parmeters as JSON file</h1>''' + hrefs_li +  '''
+    <h1>Step1: Upload a parmeters as JSON or CSV file</h1>''' + hrefs_li +  '''
     <form action="" method=post enctype=multipart/form-data>
       <p><input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
       <input id="upldbttn" style="visibility:hidden" type=submit value="Upload">
@@ -139,13 +149,13 @@ def fireBRM():
     sel_params = request.args.get('selected-params')
     sel_rules = request.args.get('selected-rule')
     rows,cols = 0,1
-    if(not sel_rules): sel_rules = cache.get('selected-rule')
+    if(not sel_rules): 
+        sel_rules = cache.get('selected-rule')
     if( sel_params != cache.get('selected-rule')): #refresh cache
-           file= open(sel_params,"r+")
-           str = file.read()
            cache['selected-params'] = sel_params
-                #Prepare params
-           rows =  RulesFactory.loadParametersFromJSON(str)
+           #Prepare params (load them from file)
+           rows = prepare_params(sel_params)
+
     rf = cache.get('rf')
     msg =''
     if(not rf):

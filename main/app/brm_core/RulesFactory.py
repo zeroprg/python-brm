@@ -99,15 +99,31 @@ class RulesFactory(object):
             print(self.eval_rules_dict)
 
 
-        # define all parameters:
-        #STCC       = param_mtrx [0][0:rows]
-        #Position_  = vector_to_matrix(np.arange(rows))
-        #Weight_    = vector_to_matrix(param_mtrx [1][0:rows])
-        #Length_    = vector_to_matrix(param_mtrx [2][0:rows])
-        #CushionDB_ = vector_to_matrix(param_mtrx [3][0:rows])
-        #Hazard_    = vector_to_matrix(param_mtrx [4][0:rows])
+  
+        # This is static method used as helper to download parameters from spreadsheet for BRM evaluator. 
+        # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
+        def load_params_from_excel(file_loc,except_params=('STCC','Position')):
+            wkb=xlrd.open_workbook(file_loc)
+            sheet=wkb.sheet_by_index(0)
+            header_row = 0
+            header_name =''
+            for col in range (sheet.ncols):
+                    _row = []
+                    for row in range (sheet.nrows):
+                         val = sheet.cell_value(row,col)
+                         if(row == header_row): 
+                             header_name = val
+                             (globals()[header_name]) = (globals()[header_name+'_']) = []
+                         if(not(header in except_params)): #exception case: read first column as it is without hash conversion 
+                            if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
+                         (globals()[header_name]).append(val)
+            return
 
-    def loadParametersFromJSON(json_str, except_params=('STCC','Position')):        
+   ########################################### Static methods and classes ########################################################
+
+    # This is static method used as helper to download parameters from json file for BRM evaluator. 
+    # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
+    def load_params_from_json(json_str, except_params=('STCC','Position')):        
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
@@ -129,6 +145,17 @@ class RulesFactory(object):
                 (globals()[key]) = temp
         RulesFactory.is_params_loaded = True
         return len(data)
+
+    # This is static method used as helper to download parameters from csv file for BRM evaluator. 
+    # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
+    def load_params_from_csv(file_loc,except_params=('STCC','Position')): 
+        ret = 0
+        with open(file_loc) as f:
+            reader = csv.DictReader(f)
+            data = [r for r in reader]
+            ret = loadParametersFromJSON(data, except_params)
+        return ret
+
 
     def conertToInt(s):
         ret = 0
@@ -424,7 +451,7 @@ if(__name__ == "__main__"):
     file_locRules="BRMRulesInRows.xlsx"
 
         #Test with JSON array
-    rows = RulesFactory.loadParametersFromJSON('''[
+    rows = RulesFactory.load_params_from_json('''[
               {
                 "STCC": "48ttrtt",
                 "Position": 1,
