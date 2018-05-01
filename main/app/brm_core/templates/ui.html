@@ -1,0 +1,66 @@
+<html>
+<head>
+    <script type="text/javascript" src="/static/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js-util.js"></script>
+    <script type="text/javascript" src="/static/LinkedList.js"></script>
+    <script type="text/javascript" src="/static/editor.js"></script>
+    <link rel="stylesheet" href="/static/editor.css" type="text/css" />
+    <script type="text/javascript">$(document).ready( function () {
+                var editor = new expEd.Editor({
+                    expressionContainer: $('#expression'),
+                    tokens: [{
+                        name: 'parameters',
+                        prefix: '',
+                        sufix: '',
+                        values: ['Positions', 'STCC', 'Length', 'Weight', 'Hazardous']
+                    },{
+                        name: 'functions',
+                        prefix: '',
+                        sufix: '(',
+                        values: ['Totoal', 'Summ_of', 'Minimum', 'Maximum']
+                    },{
+                        name: 'Attributes',
+                        prefix: '{a=',
+                        sufix: '}',
+                        values: ['Attr1', 'Attr2']
+                    }],
+                    operators: ['AND','OR','>','<']
+                });
+
+                editor.createUI($('#controls'));
+
+                // editor.loadExpression('({r=RoleA}OR{r=Attr1})', ['OR']);
+                // editor.loadExpression('({r=RoleA}OR{r=Attr1})AND{r=RoleB}',
+                // ['OR','AND']);
+                // editor.loadExpression('{r=RoleA}OR{r=Attr1}AND{g=Group1}OR{r=RoleB}',
+                // ['AND','OR']);
+                // editor.loadExpression('{r=RoleB}AND({r=RoleA}OR{r=Attr1})',
+                // ['OR','AND']);
+                // editor.loadExpression('({r=RoleA}OR{r=Attr1})AND({r=RoleA}OR{r=Attr1})',
+                // ['OR','AND']);
+                // editor.loadExpression('(({a=Attr1}OR{g=Group1})AND{a=Attr1})',
+                // ['OR','AND']);
+
+                editor.onError( function(msg) {
+                    alert(msg)
+                });
+
+                $('#show').click( function(e) {
+                    $('#text').text(editor.toString());
+                });
+
+            });</script>
+    <body>
+        <h1> This is BRM engine, Rule Generator. </h1>
+        <p>BRM engine still running in a test mode.</p>
+        <div id="controls">
+        </div>
+        <div id="buttons">
+            <input type="button" id="show" value="Show Expression" />
+        </div>
+        <div id="expression">
+        </div>
+        </div>
+        <div id="text">
+    </body>
+</html>

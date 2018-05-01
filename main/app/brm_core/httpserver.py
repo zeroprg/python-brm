@@ -4,6 +4,12 @@ from flask import Flask, request, redirect, url_for, send_from_directory
 from flask import render_template
 from werkzeug import secure_filename
 from RulesFactory import RulesFactory
+from jinja2 import Environment, PackageLoader, select_autoescape
+
+env = Environment(
+    loader=PackageLoader('httpserver','templates'),
+    autoescape=select_autoescape(['html', 'xml'])
+)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['.txt', '.pdf', 'xlsx', 'json'])
@@ -34,6 +40,12 @@ def prepare_params(filename):
     else:
         rows = RulesFactory.load_params_from_csv(filename)
     return rows
+
+
+@app.route('/ui', methods=['GET','POST'])
+def populate_rules_ui():
+    template = env.get_template('ui.html')
+    return template.render() 
 
 @app.route('/', methods=['GET','POST'])
 def upload_brm_file():
