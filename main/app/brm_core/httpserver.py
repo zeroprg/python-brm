@@ -1,10 +1,13 @@
 # http://flask.pocoo.org/docs/patterns/fileuploads/
 import os
-from flask import Flask, request, redirect, url_for, send_from_directory
+from flask import Flask, request, redirect, url_for, send_from_directory, session
 from flask import render_template
+from flask import Markup
 from werkzeug import secure_filename
 from RulesFactory import RulesFactory
 from jinja2 import Environment, PackageLoader, select_autoescape
+
+class MainTmplt(object): pass
 
 env = Environment(
     loader=PackageLoader('httpserver','templates'),
@@ -13,11 +16,13 @@ env = Environment(
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['.txt', '.pdf', 'xlsx', 'json'])
-MESSAGE = "<html><head>This BRM engine.</title></head><body><p>BRM engine still running in a test mode.</p></body></html>"
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+MESSAGE = '<head>This BRM engine.</title></head><body><p>BRM engine still running in a test mode.</p></body></html>'
+app = Flask(__name__)
+app.secret_key = 'any random abrakadabra'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 cache = {}
+main_tmplt = MainTmplt()
 
 def generate_file_list(ext):
     hrefs = []
@@ -75,10 +80,12 @@ def upload_brm_file():
             rs = rf.collect_rule_statistic(ret)
             return rs
  # Populate html on GET request
+   
+   
     hrefs = generate_file_list('xlsx')
 
     bttn = ' &nbsp  &nbsp  &nbsp <a href="/?_file='
-    hrefs_li = '<ol>' + ''.join(['<li><a href="' + href + '">' + href +'</a>' + bttn + href + '">select</a></li>' for href in hrefs]) + '</ol>'
+    main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
     
     sel_params = cache.get('selected-params','')
     _file = request.args.get('_file')
@@ -87,24 +94,18 @@ def upload_brm_file():
        cache['selected-rule'] = _file
     else: 
        sel_rules = cache.get('selected-rule','')
-    fireBRM =''
+
     if( sel_rules and sel_params): 
-        fireBRM = '<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>'
+        main_tmplt.fireBRM = Markup('<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     if( sel_params ):
         sel_params_bttn = '<input type="button"  value="select" onclick="window.location.href=\'params\'"/>'
-    return '''
-    <!doctype html>
-    <title>Upload a new BRM rule as Excell spread sheet file</title>
-    <h1>Step2: Upload a new BRM rule as Excell spread sheet file</h1>''' + hrefs_li +  '''
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
-      <input id="upldbttn" style="visibility:hidden" type=submit value="Upload and FireBRM">
-    <br><br>
-    <p>Rules:<b>''' +sel_rules+ ''' </b></p> <p>  Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +''' </p>
-    <br><br>
-    ''' + fireBRM +  '''
-    </form>
-    '''
+    main_tmplt.step = "Step 2: Upload a new BRM rule as Excel spread sheet file"
+    main_tmplt.bttns = Markup('''<p>Rules:<b>''' +sel_rules+ ''' </b></p>
+               <p>Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +'''</p>''')
+    main_tmplt.select = 'Select rules'
+  #  session['main_tmplt'] = main_tmplt
+    return render_template('main.html',main=main_tmplt)
+   
 
 @app.route('/params', methods=['GET','POST'])
 def post_parameters_as_JSON_file():
@@ -125,9 +126,10 @@ def post_parameters_as_JSON_file():
             #href = url_for('uploaded_file',filename=filename)
             return redirect(url_for('upload_brm_file'))
   # Populate html on GET request
+  #  main_tmplt = MainTmplt()
     hrefs = generate_file_list('json')
     bttn = ' &nbsp  &nbsp  &nbsp <a href="/params?_file='
-    hrefs_li = '<ol>' + ''.join(['<li><a href="' + href + '">' + href +'</a>' + bttn + href + '">select</a></li>' for href in hrefs]) + '</ol>'
+    main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
     
     sel_rules = cache.get('selected-rule','')
     _file = request.args.get('_file')
@@ -136,26 +138,21 @@ def post_parameters_as_JSON_file():
         cache['selected-params'] = _file
     else: 
        sel_params = cache.get('selected-params','')
-    fireBRM =''
+
     path_to_select_rules ='/'
     if( sel_rules and sel_params): 
-        fireBRM =  '<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>'
+        main_tmplt.fireBRM =  Markup('<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     next_bttn=''
     if( sel_params ):
         next_bttn = '<input type="button"  value="select..." onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
-    return '''
-    <!doctype html>
-    <title>Upload a new BRM rule as Excell spread sheet file</title>
-    <h1>Step1: Upload a parmeters as JSON or CSV file</h1>''' + hrefs_li +  '''
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
-      <input id="upldbttn" style="visibility:hidden" type=submit value="Upload">
-    <br><br> 
-    <p>Rules:<b>'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p> <p>  Parameters: <b>'''+ sel_params +''' </b></p>
-    <br><br>
-    ''' + fireBRM +  '''
-    </form>
-    '''
+    main_tmplt.step = "Step 1: Upload a parmeters as JSON or CSV file"
+    main_tmplt.bttns = Markup('''<p>Rules:<b>'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p>
+                                 <p>Parameters: <b>'''+ sel_params +''' </b></p> ''')
+    main_tmplt.select = 'Select params'
+  #  session['main_tmplt'] = main_tmplt
+    return render_template('main.html',main=main_tmplt)
+
+
 @app.route('/fireBRM')
 def fireBRM():
     sel_params = request.args.get('selected-params')
@@ -175,7 +172,9 @@ def fireBRM():
         rf.show_log = True
         ret = rf.fireBRM()
         msg = rf.collect_rule_statistic(ret)
-    return msg
+   # main_tmplt = session['main_tmplt']
+    main_tmplt.msg = Markup(msg)
+    return render_template('main.html',main=main_tmplt)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
