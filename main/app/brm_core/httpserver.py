@@ -100,8 +100,8 @@ def upload_brm_file():
     if( sel_params ):
         sel_params_bttn = '<input type="button"  value="select" onclick="window.location.href=\'params\'"/>'
     main_tmplt.step = "Step 2: Upload a new BRM rule as Excel spread sheet file"
-    main_tmplt.bttns = Markup('''<p>Rules:<b>''' +sel_rules+ ''' </b></p>
-               <p>Parameters: <b>'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +'''</p>''')
+    main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;''' +sel_rules+ ''' </b></p>
+               <p><b> Selected Parameters:  &nbsp;'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +'''</p>''')
     main_tmplt.select = 'Select rules'
   #  session['main_tmplt'] = main_tmplt
     return render_template('main.html',main=main_tmplt)
@@ -146,8 +146,8 @@ def post_parameters_as_JSON_file():
     if( sel_params ):
         next_bttn = '<input type="button"  value="select..." onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
     main_tmplt.step = "Step 1: Upload a parmeters as JSON or CSV file"
-    main_tmplt.bttns = Markup('''<p>Rules:<b>'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p>
-                                 <p>Parameters: <b>'''+ sel_params +''' </b></p> ''')
+    main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p>
+                                 <p><b> Selected Parameters: &nbsp; '''+ sel_params +''' </b></p> ''')
     main_tmplt.select = 'Select params'
   #  session['main_tmplt'] = main_tmplt
     return render_template('main.html',main=main_tmplt)

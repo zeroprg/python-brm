@@ -1,0 +1,74 @@
+[
+  {
+    "STCC": "48ttrtt",
+    "Position": 1,
+    "Length": 34,
+    "Weight": 65,
+    "Hazardous": "N",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "49422h",
+    "Position": 2,
+    "Length": 30,
+    "Weight": 60,
+    "Hazardous": "N",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "422h",
+    "Position": 3,
+    "Length": 35,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "4422h",
+    "Position": 4,
+    "Length": 34,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "49422h",
+    "Position": 5,
+    "Length": 30,
+    "Weight": 60,
+    "Hazardous": "N",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "422h",
+    "Position": 6,
+    "Length": 35,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "4422h",
+    "Position": 7,
+    "Length": 34,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "422h",
+    "Position": 8,
+    "Length": 35,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  },
+  {
+    "STCC": "4422h",
+    "Position": 9,
+    "Length": 34,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": "Y"
+  }
+]

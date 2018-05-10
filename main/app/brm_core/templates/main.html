@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Bootstrap Example</title>
+    <title>Python-BRM inventory</title>
+    <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
 
         /* Remove the navbar's default margin-bottom and rounded borders */
@@ -55,52 +56,88 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-inverse">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Logo</a>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">BRM Rules Inventory</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <!--                              <li class="nav-item active">
+                       <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                   </li>
+        -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+ <!--  <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Dropdown
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
             </div>
-            <div class="collapse navbar-collapse" id="myNavbar">
-                <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Projects</a></li>
-                    <li><a href="#">Contact</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-                </ul>
-            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">Disabled</a>
+        </li>
+           -->
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search files in inventory" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
         </div>
     </nav>
 
     <div class="container-fluid text-center">
         <div class="row content">
+
             <div class="col-sm-2 sidenav">
+
                 <h3>{{ main.select }}</h3>
                 {{ main.hrefs_li }}
+                <h3> or upload </h3>
+                <form  action="" method=post enctype=multipart/form-data>
+                    <div class="input-group mb-3">
+                        <div class="custom-file">
+                            <input type=file name=file class="custom-file-input" id="inputGroupFile02" onchange="document.getElementById('upldbttn').style.visibility='visible'">
+                            <label class="custom-file-label" for="inputGroupFile02">Choose</label>
+                            <!--<input id="upldbttn" style="visibility:hidden" type=submit value="Upload">-->
+                        </div>
+                        <div class="input-group-append">
+                            <input id="upldbttn" style="visibility:hidden" type=submit value="Upload">
+                        </div>
+                    </div>
+                </form>
+
+
             </div>
+
             <div class="col-sm-8 text-left">
                 <h1>Welcome to BRM inventory</h1>
-                <p> Fire BRM rule set is 2 steps process:.</p>
+                <p> Fire BRM rule set is easy 2 steps process:</p>
                 <hr>
                 <h2>{{ main.step}}</h2>
                 <h4>To select file you can upload a new file by clicking on Upload button or select from repository on left. </h4>
                 <form action="" method=post enctype=multipart/form-data>
                     <p>
-                        <input type=file name=file onchange="document.getElementById('upldbttn').style.visibility='visible'">
-                        <input id="upldbttn" style="visibility:hidden" type=submit value="Upload">
-                        <br><br> {{ main.bttns}}<br><br>
-                        {{ main.fireBRM}}
+                        <br> {{ main.bttns}}
+                    </p>
+
                 </form>
+
+
                 <hr>
                 {{ main.msg}}
-
+                <hr>
+                {{ main.fireBRM}}
             </div>
             <div class="col-sm-2 sidenav">
                 <div class="well">
@@ -117,5 +154,20 @@
         <p>Open Source MIT Licence</p>
     </div>
 
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+        $('#inputGroupFile02').on('change', function () {
+            //get the file name
+            var fileName = $(this).val();
+            //replace the "Choose a file" label
+            $(this).next('.custom-file-label').html(fileName);
+            $('upldbttn').style.visibility = 'visible'
+            style.visibility = 'visible'
+        })
+    </script>
 </body>
 </html>
