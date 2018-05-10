@@ -84,8 +84,8 @@ def upload_brm_file():
    
     hrefs = generate_file_list('xlsx')
 
-    bttn = ' &nbsp  &nbsp  &nbsp <a href="/?_file='
-    main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
+    main_tmplt.hrefs_li = Markup('<table>' + ''.join(['<tr> <td><a href="/?_file=' + href + '">' + href[8:] +'</a>' 
+                                                +' </td><td align="right"> <a href="/'        + href + '" class="btn btn-primary btn-sm" role="button">View</a></td></tr>' for href in hrefs]) + '</table>')
     
     sel_params = cache.get('selected-params','')
     _file = request.args.get('_file')
@@ -96,9 +96,9 @@ def upload_brm_file():
        sel_rules = cache.get('selected-rule','')
 
     if( sel_rules and sel_params): 
-        main_tmplt.fireBRM = Markup('<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
+        main_tmplt.fireBRM = Markup('<input type="button" class="btn btn-primary"  value="Fire BRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     if( sel_params ):
-        sel_params_bttn = '<input type="button"  value="select" onclick="window.location.href=\'params\'"/>'
+        sel_params_bttn = '<input type="button"  value="select" class="btn btn-primary" onclick="window.location.href=\'params\'"/>'
     main_tmplt.step = "Step 2: Upload a new BRM rule as Excel spread sheet file"
     main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;''' +sel_rules+ ''' </b></p>
                <p><b> Selected Parameters:  &nbsp;'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +'''</p>''')
@@ -128,8 +128,11 @@ def post_parameters_as_JSON_file():
   # Populate html on GET request
   #  main_tmplt = MainTmplt()
     hrefs = generate_file_list('json')
-    bttn = ' &nbsp  &nbsp  &nbsp <a href="/params?_file='
-    main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
+   # bttn = ' &nbsp  &nbsp  &nbsp <a href="/params?_file='
+   # main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
+    main_tmplt.hrefs_li = Markup('<table>' + ''.join(['<tr><td> <a href="/params?_file=' + href + '">' + href[8:] +'</a>' 
+                                                +' </td><td> <a href="/'        + href + '" class="btn btn-primary btn-sm" role="button">View</a></td></tr>' for href in hrefs]) + '</table>')
+
     
     sel_rules = cache.get('selected-rule','')
     _file = request.args.get('_file')
@@ -141,10 +144,10 @@ def post_parameters_as_JSON_file():
 
     path_to_select_rules ='/'
     if( sel_rules and sel_params): 
-        main_tmplt.fireBRM =  Markup('<input type="button"  value="FireBRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
+        main_tmplt.fireBRM =  Markup('<input type="button" value="Fire BRM" class="btn btn-primary" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     next_bttn=''
     if( sel_params ):
-        next_bttn = '<input type="button"  value="select..." onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
+        next_bttn = '<input type="button"  value="select..." class="btn btn-primary" onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
     main_tmplt.step = "Step 1: Upload a parmeters as JSON or CSV file"
     main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p>
                                  <p><b> Selected Parameters: &nbsp; '''+ sel_params +''' </b></p> ''')
