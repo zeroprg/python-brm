@@ -67,7 +67,7 @@
 
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">BRM Rules Inventory</a>
+        <a class="navbar-brand" href="/">BRM Rules Inventory</a>
         <!--        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -89,6 +89,7 @@
             <div class="col-sm-2 sidenav">
 
                 <h3>{{ main.select }}</h3>
+                by click on it
                 {{ main.hrefs_li }}
                 <h3> or upload </h3>
                 <form action="" method=post enctype=multipart/form-data>
@@ -109,7 +110,7 @@
 
             <div class="col-sm-8 text-left">
                 <h1>Welcome to BRM inventory</h1>
-                <p> Fire BRM rule set is easy 2 steps process:</p>
+                <p> Fire BRM rule set is easy 3 steps process:</p>
                 <hr>
                 <h2>{{ main.step}}</h2>
                 To upload a new file click on Upload button or select from repository on left pane.
@@ -119,12 +120,11 @@
                     </p>
 
                 </form>
-
+                <hr>
+                {{ main.fireBRM}}
 
                 <hr>
                 {{ main.msg}}
-                <hr>
-                {{ main.fireBRM}}
             </div>
             <!-- <div class="col-sm-2 sidenav">
                     <div class="well">

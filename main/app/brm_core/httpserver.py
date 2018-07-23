@@ -95,11 +95,12 @@ def upload_brm_file():
     else: 
        sel_rules = cache.get('selected-rule','')
 
+    main_tmplt.step = "Step 2: Upload a new BRM rule as Excel spread sheet file"
     if( sel_rules and sel_params): 
+        main_tmplt.step = "Step 3: Fire BRM rules against parameters or change rules,parameters"
         main_tmplt.fireBRM = Markup('<input type="button" class="btn btn-primary"  value="Fire BRM" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     if( sel_params ):
-        sel_params_bttn = '<input type="button"  value="select" class="btn btn-primary" onclick="window.location.href=\'params\'"/>'
-    main_tmplt.step = "Step 2: Upload a new BRM rule as Excel spread sheet file"
+        sel_params_bttn = '<input type="button"  value="select parameters" class="btn btn-primary" onclick="window.location.href=\'params\'"/>'
     main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;''' +sel_rules+ ''' </b></p>
                <p><b> Selected Parameters:  &nbsp;'''+ sel_params +''' </b> &nbsp''' + sel_params_bttn +'''</p>''')
     main_tmplt.select = 'Select rules'
@@ -143,12 +144,14 @@ def post_parameters_as_JSON_file():
        sel_params = cache.get('selected-params','')
 
     path_to_select_rules ='/'
-    if( sel_rules and sel_params): 
+    # By default step is 1
+    main_tmplt.step = "Step 1: Upload a parmeters as JSON or CSV file"
+    if( sel_rules and sel_params):
+        main_tmplt.step = "Step 3: Fire BRM rules against parameters or change rules,parameters"
         main_tmplt.fireBRM =  Markup('<input type="button" value="Fire BRM" class="btn btn-primary" onclick="window.location.href=\'fireBRM?selected-params='+ sel_params + '&selected-rule=' +sel_rules+'\'"/>')
     next_bttn=''
     if( sel_params ):
-        next_bttn = '<input type="button"  value="select..." class="btn btn-primary" onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
-    main_tmplt.step = "Step 1: Upload a parmeters as JSON or CSV file"
+        next_bttn = '<input type="button"  value="select rules" class="btn btn-primary" onclick="window.location.href=\''+ path_to_select_rules +'\'"/>'
     main_tmplt.bttns = Markup('''<p><b> Selected Rules: &nbsp;'''+sel_rules+''' </b> &nbsp''' + next_bttn +'''</p>
                                  <p><b> Selected Parameters: &nbsp; '''+ sel_params +''' </b></p> ''')
     main_tmplt.select = 'Select params'
