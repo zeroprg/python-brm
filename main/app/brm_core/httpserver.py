@@ -7,6 +7,8 @@ from werkzeug import secure_filename
 from RulesFactory import RulesFactory
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+
+
 class MainTmplt(object): pass
 
 env = Environment(
@@ -23,6 +25,9 @@ app.secret_key = 'any random abrakadabra'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 cache = {}
 main_tmplt = MainTmplt()
+
+
+
 
 def generate_file_list(ext):
     hrefs = []

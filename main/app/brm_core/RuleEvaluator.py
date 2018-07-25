@@ -1,6 +1,6 @@
 from theano import tensor as T
 import theano, time, numpy
-
+import re
 
 
 
@@ -30,13 +30,17 @@ class RuleEvaluator(object):
         operands_const= {'>' : 'T.gt(' + rule_left +', _const)',
                         '<' : 'T.lt(' + rule_left +', _const)',
                         '<=': 'T.le(' + rule_left +', _const)',
+                        '=<': 'T.le(' + rule_left +', _const)',
                         '>=': 'T.ge(' + rule_left +', _const)',
+                        '=>': 'T.ge(' + rule_left +', _const)',
                         '=' : 'T.eq(' + rule_left +', _const)',
                         }
         operands      = {'>' : 'T.gt(' + rule_left +','+ rule_right+')',
                         '<' : 'T.lt(' + rule_left +','+ rule_right+')',
                         '<=': 'T.le(' + rule_left +','+ rule_right+')',
+                        '=<': 'T.le(' + rule_left +','+ rule_right+')',
                         '>=': 'T.ge(' + rule_left +','+ rule_right+')',
+                        '=>': 'T.ge(' + rule_left +','+ rule_right+')',
                         '=' : 'T.eq(' + rule_left +','+ rule_right+')',
                         }
 
@@ -50,16 +54,19 @@ class RuleEvaluator(object):
         else:
             self.ones = numpy.ones((rows,cols))
             self.zeros = numpy.zeros((rows,cols))
-            r = eval(rule_right)
-            if type(r) is list: 
+            match_bracket = re.search(r'\[(.*)\]', rule_right)
+            if match_bracket:
+                r = match_bracket.group(1).split(',')
                 for item in r:
-                    _const = T.constant(item)    
+                    if '.' in item:
+                       _const = T.constant(float(item))    
+                    else:
+                       _const = T.constant(int(item))    
                     t_compare = eval( operands_const[operand] )
                     z_switch = T.switch(t_compare, self.ones, self.zeros)
                     self.f_switch.append(theano.function(arg_set, z_switch, mode=theano.Mode(linker='vm')))
             else:
                     t_compare = eval(operands[operand])
-
                     z_switch = T.switch(t_compare, self.ones, self.zeros)
                     self.f_switch.append(theano.function(arg_set, z_switch, mode=theano.Mode(linker='vm')))
 

@@ -12,6 +12,8 @@ from RuleEvaluator import RuleEvaluator
 
 
 
+
+
 # Class itself
 #================================================================================================
 
@@ -32,7 +34,7 @@ class RulesFactory(object):
     #set true if parameters already loaded
     is_params_loaded = False
 
-    _funct_dict = {'check_first_2_characters_of': 'vfind', "starts_with":"vstarts_with", "Sum_of": 'sum'  }
+    _funct_dict = {'check_first_2_characters_of': 'vfind', "starts_with": "vstarts_with", "Sum_of": 'sum'  }
     _constant_dict = {'Y': 1, 'N': 0}
     _boolean_operations_dict = {} #' np.logical_and, np.logical_or, np.logical_xor 
 
@@ -105,7 +107,7 @@ class RulesFactory(object):
   
         # This is static method used as helper to download parameters from spreadsheet for BRM evaluator. 
         # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
-        def load_params_from_excel(file_loc,except_params=('STCC','Position')):
+        def load_params_from_excel(file_loc,except_params=('STCC','Position','AAR_CAR_TYPE','SCS')):
             wkb=xlrd.open_workbook(file_loc)
             sheet=wkb.sheet_by_index(0)
             header_row = 0
@@ -126,7 +128,7 @@ class RulesFactory(object):
 
     # This is static method used as helper to download parameters from json file for BRM evaluator. 
     # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
-    def load_params_from_json(json_str, except_params=('STCC','Position')):        
+    def load_params_from_json(json_str, except_params=('STCC','Position','AAR_CAR_TYPE','SCS')):        
         data = json.loads(json_str)
         for key in data[0]:
             key_ = key
@@ -151,7 +153,7 @@ class RulesFactory(object):
 
     # This is static method used as helper to download parameters from csv file for BRM evaluator. 
     # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
-    def load_params_from_csv(file_loc,except_params=('STCC','Position')): 
+    def load_params_from_csv(file_loc,except_params=('STCC','Position','AAR_CAR_TYPE','SCS')): 
         ret = 0
         with open(file_loc) as f:
             reader = csv.DictReader(f)
@@ -171,13 +173,25 @@ class RulesFactory(object):
         return ret
         
     
-    # Replace constants by encoded integer use constant dictionary
+    # Replace constants by encoded integer for all possible variations including constants in list like this : "['A','B']"
     def constantReplacer(val):
-        match = re.search(r'\'(.*)\'', val)
-        if( not match ): raise Exception( 'Constants must be in one quotes like this \'Y\' or \'N\'. Error in:  ' + val )
-        const =  match.group(1)        
-        hashcode = str(RulesFactory.convertToInt(const))
-        ret = val.replace('\'' + const + '\'' , hashcode )
+        match_bracket = re.search(r'\[(.*)\]', val)
+        ret = val
+        if match_bracket:
+            const_com = match_bracket.group(1)
+            const_arr = const_com.split(',')
+            for item in const_arr:
+                match_quote = re.search(r'\'(.*)\'', item)
+                v = match_quote.group(1)
+                hashcode = str(RulesFactory.convertToInt(v))
+                ret = ret.replace( item , hashcode )
+                
+        else:
+            match_quote = re.search(r'\'(.*)\'', val)
+            if not match_quote: raise Exception( 'Constants must be in one quotes like this \'Y\' or \'N\'. Error in:  ' + val )
+            const =  match_quote.group(1)        
+            hashcode = str(RulesFactory.convertToInt(const))
+            ret = val.replace('\'' + const + '\'' , hashcode )
         return ret
     
     # Start point for translation rule from string to Python code
@@ -203,6 +217,7 @@ class RulesFactory(object):
     def populate_rule_args(self,rule,all_params):
         args = []
         for arg in all_params:
+            arg = arg.strip()
             if( rule.find(arg) >=0 ): args.append(arg)
         if( not args ): raise Exception( 'Rule: "' +  rule+ '"  must have at least one argument from the header of spread shhet.  To fix it define argument in first row of spreadsheet ')
         return args
@@ -305,7 +320,7 @@ class RulesFactory(object):
                 all_params = self.rules_mtrx[0][j]
                 rule = self.rules_mtrx[i][j]
                 if( not rule or rule == 'None'): continue
-                operand = self.find_operand(rule,['<','>','>=','<=','=']) # move to translate rule
+                operand = self.find_operand(rule,['>=','=>','<=','=<','=','<','>']) # move to translate rule
                 if( not operand and rule):
                     # add no parameters rules to immediate evaluation rule's dictionary by key where key is point to spreadsheet column
                     self.rules_immediate_eval_dict[self.rule_names[i-1]] = rule
@@ -420,7 +435,6 @@ class RulesFactory(object):
         str_ok = ' '.join([str(x) + ', '  for x in positions_ok]) 
 
         html = '<html><h1> This  is BRM statistic: </h1>'
-        html +='<p  style="color:red;"><b>' +  self.errors_msg + '</b> </p> '
         print( self.errors_msg )
         if( str_f ):
             msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
@@ -451,8 +465,8 @@ if(__name__ == "__main__"):
     rows,cols = 0,1
     #file_locParams="matrixOfParams.xlsx"
     #file_locRules="BRMRulesInColumns.xlsx"
-    file_locRules="BRMRulesInRows.xlsx"
-
+    #file_locRules="BRMRulesInRows.xlsx"
+    file_locRules="BRMRulesLatest.xlsx"
         #Test with JSON array
     rows = RulesFactory.load_params_from_json('''[
               {
@@ -461,7 +475,13 @@ if(__name__ == "__main__"):
                 "Length": 34,
                 "Weight": 65,
                 "Hazardous":"N",
-                "CushionDB": 0
+                "CushionDB": 0,
+                "BEARINGS":"A",
+                "STATION": 6300,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW10000",
+                "AAR_CAR_TYPE": "M310",
+                "SCS":"112J34534"
               },
               {
                 "STCC": "49422h",
@@ -469,7 +489,13 @@ if(__name__ == "__main__"):
                 "Length": 30,
                 "Weight": 60,
                 "Hazardous":"N",
-                "CushionDB": 5
+                "CushionDB": 5,
+                "BEARINGS":"B",
+                "STATION": 6305,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW123000",
+                "AAR_CAR_TYPE": "M340",
+                "SCS":"112J34534"
               },
               {
                 "STCC": "422h",
@@ -477,7 +503,13 @@ if(__name__ == "__main__"):
                 "Length": 35,
                 "Weight": 6,
                 "Hazardous":"Y",
-                "CushionDB": 5
+                "CushionDB": 35,
+                "BEARINGS":"C",
+                "STATION": 6304,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW113000",
+                "AAR_CAR_TYPE": "M340",
+                "SCS":"112J34534"
               },
               {
                 "STCC": "4422h",
@@ -485,7 +517,13 @@ if(__name__ == "__main__"):
                 "Length": 34,
                 "Weight": 6,
                 "Hazardous":"Y",
-                "CushionDB": 36
+                "CushionDB": 36,
+                "BEARINGS":"C",
+                "STATION": 6104,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW113000",
+                "AAR_CAR_TYPE": "M340",
+                "SCS":"112J34534"
               }  
             ]''')
 

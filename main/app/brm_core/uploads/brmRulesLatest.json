@@ -1,0 +1,58 @@
+[
+              {
+                "STCC": "48ttrtt",
+                "Position": 1,
+                "Length": 34,
+                "Weight": 65,
+                "Hazardous":"N",
+                "CushionDB": 0,
+                "BEARINGS":"A",
+                "STATION": 6300,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW10000",
+                "AAR_CAR_TYPE": "M310",
+                "SCS":"112J34534"
+              },
+              {
+                "STCC": "49422h",
+                "Position": 2,
+                "Length": 30,
+                "Weight": 60,
+                "Hazardous":"N",
+                "CushionDB": 5,
+                "BEARINGS":"B",
+                "STATION": 6305,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW123000",
+                "AAR_CAR_TYPE": "M340",
+                "SCS":"112J34534"
+              },
+              {
+                "STCC": "422h",
+                "Position": 2,
+                "Length": 35,
+                "Weight": 6,
+                "Hazardous":"Y",
+                "CushionDB": 35,
+                "BEARINGS":"C",
+                "STATION": 6304,
+                "EMPTY_LOAD": 2,
+                "CAR_SERIES": "MILW113000",
+                "AAR_CAR_TYPE": "M340",
+                "SCS":"112J34534"
+              },
+  {
+    "STCC": "4422h",
+    "Position": 2,
+    "Length": 34,
+    "Weight": 6,
+    "Hazardous": "Y",
+    "CushionDB": 36,
+    "BEARINGS": "C",
+    "STATION": 6104,
+    "EMPTY_LOAD": 2,
+    "CAR_SERIES": "MILW113000",
+    "AAR_CAR_TYPE": "M340",
+    "SCS": "112J34534"
+  }  
+            ]
