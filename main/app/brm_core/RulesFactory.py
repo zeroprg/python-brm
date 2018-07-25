@@ -32,7 +32,7 @@ class RulesFactory(object):
     #set true if parameters already loaded
     is_params_loaded = False
 
-    _funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
+    _funct_dict = {'check_first_2_characters_of': 'vfind', "starts_with":"vstarts_with", "Sum_of": 'sum'  }
     _constant_dict = {'Y': 1, 'N': 0}
     _boolean_operations_dict = {} #' np.logical_and, np.logical_or, np.logical_xor 
 
@@ -60,9 +60,12 @@ class RulesFactory(object):
         else: ret = True 
         return ret
 
+    def starts_with(string, arg):
+        return (string.startswith(arg))
+
 # define function to find as global variable
     vfind = np.vectorize(find)
-
+    vstarts_with = np.vectorize(starts_with)
 # test vfind 
 #print(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
 
@@ -115,7 +118,7 @@ class RulesFactory(object):
                              header_name = val
                              (globals()[header_name]) = (globals()[header_name+'_']) = []
                          if(not(header in except_params)): #exception case: read first column as it is without hash conversion 
-                            if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
+                            if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
                          (globals()[header_name]).append(val)
             return
 
@@ -137,7 +140,7 @@ class RulesFactory(object):
             for i in range(len(data)):
                 val = data[i][key]
                 if(not( key in except_params)):
-                    if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
+                    if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
                 temp.append(val)
             #if(not( key in except_params)):
             (globals()[key+'_']) =  RulesFactory.vector_to_matrix(temp)
@@ -157,7 +160,7 @@ class RulesFactory(object):
         return ret
 
 
-    def conertToInt(s):
+    def convertToInt(s):
         ret = 0
         # get from  dict fro mmost common constants
         if(s in RulesFactory._constant_dict):
@@ -171,9 +174,9 @@ class RulesFactory(object):
     # Replace constants by encoded integer use constant dictionary
     def constantReplacer(val):
         match = re.search(r'\'(.*)\'', val)
-        if( not match ): raise Exception( 'Constants mus be in one quotes like this \'Y\' or \'N\'. Error in:  ' + val )
-        const =  match.group(1)
-        hashcode = str(conertToInt(const))
+        if( not match ): raise Exception( 'Constants must be in one quotes like this \'Y\' or \'N\'. Error in:  ' + val )
+        const =  match.group(1)        
+        hashcode = str(RulesFactory.convertToInt(const))
         ret = val.replace('\'' + const + '\'' , hashcode )
         return ret
     
@@ -215,7 +218,7 @@ class RulesFactory(object):
                 for row in range (sheet.nrows):
                      val = sheet.cell_value(row,col)
                      if( col > 0): #exception case: read first column as it is without hash conversion 
-                        if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.conertToInt(val)
+                        if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
                      _row.append(val)
                 _matrix.append(_row)
         return _matrix
@@ -241,7 +244,7 @@ class RulesFactory(object):
                              if (  val.find(rule) >= 0 ):
                                  val = self.do_rule_translation( rule, val ) # this word is rule function translate it
                             
-                         if( val.find('\'') >=0 ): val = constantReplacer(val)
+                         if( val.find('\'') >=0 ): val = RulesFactory.constantReplacer(val)
                          _row.append(val)
                 _matrix.append(_row)
         return _matrix
@@ -259,7 +262,7 @@ class RulesFactory(object):
                 for col in range (sheet.ncols):
                      val = sheet.cell_value(row,col)
                      if( col == 0 and row == 0 ): continue
-                     if( not val or  val.strip() == '' ): # Empty cell
+                     if( not val or  val.strip() == '' or val == 'None' ): # Empty cell
                          _row.append('None') 
                          continue
                      if( col == 0 ): 
@@ -281,14 +284,14 @@ class RulesFactory(object):
                              if (  val.find(rule) >= 0 ):
                                  val = self.do_rule_translation( rule, val ) # this word is rule function translate it
                             
-                         if( val.find('\'') >=0 ): val = constantReplacer(val)
+                         if( val.find('\'') >=0 ): val = RulesFactory.constantReplacer(val)
                          _row.append(val)
                 _matrix.append(_row)
         return _matrix    
     # Algorithm of  rules conversion
     # check if the rule has any constants (embedded in '') if yes convert constant to integer hashcode
     # check if the rule has function  which required some preprocessing
-    # for example check_first_2_characters_of(...) . If it has fire rule preprocessor to convert it to vfind(...)
+    # for example check_first_2_characters_of(...) . If it has then fire rule preprocessor to convert it to vfind(...)
     # This rule requiered translation and  data preparation before firing it 
     # both sides left and right must be numeric
 
@@ -458,7 +461,7 @@ if(__name__ == "__main__"):
                 "Length": 34,
                 "Weight": 65,
                 "Hazardous":"N",
-                "CushionDB": "Y"
+                "CushionDB": 0
               },
               {
                 "STCC": "49422h",
@@ -466,7 +469,7 @@ if(__name__ == "__main__"):
                 "Length": 30,
                 "Weight": 60,
                 "Hazardous":"N",
-                "CushionDB": "Y"
+                "CushionDB": 5
               },
               {
                 "STCC": "422h",
@@ -474,7 +477,7 @@ if(__name__ == "__main__"):
                 "Length": 35,
                 "Weight": 6,
                 "Hazardous":"Y",
-                "CushionDB": "Y"
+                "CushionDB": 5
               },
               {
                 "STCC": "4422h",
@@ -482,7 +485,7 @@ if(__name__ == "__main__"):
                 "Length": 34,
                 "Weight": 6,
                 "Hazardous":"Y",
-                "CushionDB": "Y"
+                "CushionDB": 36
               }  
             ]''')
 

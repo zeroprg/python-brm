@@ -13,7 +13,7 @@ file_locParams="C:\\Users\\ark0006\\Documents\\matrixOfParams.xlsx"
 file_locRules="C:\\Users\\ark0006\\Documents\\BRMRules.xlsx"
 
 
-_funct_dict = {'check_first_2_characters_of': 'vfind', "Sum_of": 'sum'  }
+_funct_dict = {'check_first_2_characters_of': 'vfind', "start_with":'vstart_with',  "Sum_of": 'sum'  }
 _constant_dict = {'Y': 1, 'N': 0}
 #def boolean_f(x):
 #    return np.logical_and(x)
@@ -34,19 +34,25 @@ def conv_rule1(val):
 # find any occurance of elements from search_list in string in position 0
 def find(string): 
     ret = False
+    # defind arg1 for function find as global variable
+    arg1 = ('48', '49') 
     for arg in arg1:
        if( string.find(arg) == 0 ): 
            ret = True
            break
     return ret
 
-# defind arg1 for function find as global variable
-arg1 = ('48', '49') 
+def starts_with(string, arg):
+    return (string.startswith(arg))
+
 vfind = np.vectorize(find)
+vstarts_with = np.vectorize(starts_with)
+                           
 
 # test vfind 
 print(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds']))
-
+# test vstart_with
+print(vstarts_with(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'],'48')) 
 
 
 # special dictionary which say how convert written  functions to python notations
