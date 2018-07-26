@@ -125,16 +125,12 @@
 
                 <hr>
                 {{ main.msg}}
+                <h3>Log file:</h3>
+                <div id="output"></div>
             </div>
-            <!-- <div class="col-sm-2 sidenav">
-                    <div class="well">
-                        <p></p>
-                    </div>
-                    <div class="well">
-                        <p></p>
-                    </div>
-                </div>
-             -->
+       <!-- <div id="output" class="col-sm-2 sidenav">
+            </div>
+            -->
         </div>
     </div>
 
@@ -162,6 +158,17 @@
             $('upldbttn').style.visibility = 'visible'
             style.visibility = 'visible'
         })
+
+        var output = document.getElementById('output');
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '{{ url_for('stream') }}');
+        xhr.send();
+
+        setInterval(function() {
+            output.innerHTML = xhr.responseText.replace(/\n/g, "<br />");
+        }, 1000);
     </script>
+
 </body>
 </html>

@@ -4,9 +4,15 @@ from flask import Flask, request, redirect, url_for, send_from_directory, sessio
 from flask import render_template
 from flask import Markup
 from werkzeug import secure_filename
-from RulesFactory import RulesFactory
-from jinja2 import Environment, PackageLoader, select_autoescape
 
+from jinja2 import Environment, PackageLoader, select_autoescape
+from time import sleep
+import logging
+
+
+
+
+from RulesFactory import RulesFactory
 
 
 class MainTmplt(object): pass
@@ -67,7 +73,7 @@ def upload_brm_file():
         file_ext = file.filename[-4:].lower()
         if( file and file_ext == 'xlsx' ):
             filename = secure_filename(file.filename)
-            print('file uploaded: ' + filename)
+            logger.info('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             filename = app.config['UPLOAD_FOLDER'] +'/' + filename
 
@@ -120,7 +126,7 @@ def post_parameters_as_JSON_file():
         file_ext = file.filename[-4:].lower()
         if (file and (file_ext == 'json' or file_ext == '.csv')):
             filename = secure_filename(file.filename)
-            print('file uploaded: ' + filename)
+            logger.info('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             filename = app.config['UPLOAD_FOLDER']+'/' + file.filename
             cache['selected-params'] = filename
@@ -163,6 +169,31 @@ def post_parameters_as_JSON_file():
   #  session['main_tmplt'] = main_tmplt
     return render_template('main.html',main=main_tmplt)
 
+@app.route('/stream')
+def stream():
+    def generate():
+        with open('job.log') as f:
+                lines = tail(f,20)
+                for line in lines:
+                    yield line
+#                sleep(1)
+
+    return app.response_class(generate(), mimetype='text/plain')
+
+def tail(f, n):
+    assert n >= 0
+    pos, lines = n+1, []
+    while len(lines) <= n:
+        try:
+            f.seek(-pos, 2)
+        except IOError:
+            f.seek(0)
+            break
+        finally:
+            lines = list(f)
+        pos *= 2
+    return lines[-n:]
+
 
 @app.route('/fireBRM')
 def fireBRM():
@@ -192,5 +223,22 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if (__name__ == '__main__'):
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('job.log')
+    fh.setLevel(logging.DEBUG)
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.ERROR)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    console.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(console)
+
     app.run(host='0.0.0.0',threaded=True,port=8080) 
 
