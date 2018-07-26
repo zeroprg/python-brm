@@ -8,25 +8,7 @@ from numpy import array
 import time
 import json
 from RuleEvaluator import RuleEvaluator
-
-import logging
-logger = logging.getLogger(__name__)
-
-logger = logging.getLogger('log')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('job.log')
-fh.setLevel(logging.DEBUG)
-
-console = logging.StreamHandler()
-console.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-console.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(console)
+from utils.logginginitializer import *
 
 
 # Class itself
@@ -84,7 +66,7 @@ class RulesFactory(object):
     vfind = np.vectorize(find)
     vstarts_with = np.vectorize(starts_with)
 # test vfind 
-#logger.info(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
+#logging.info(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
 
 
 # special dictionary which converts written  functions to python notations
@@ -96,9 +78,10 @@ class RulesFactory(object):
         return ret
 
 
-    def __init__(self,  file_locRules , rows, cols):
+    def __init__(self,  file_locRules , rows, cols, logfile='job.log'):
         """Return a Customer object whose name is *name* and starting
         balance is *balance*."""
+        initialize_logger(logfile)
         self.show_log = False
         self.rows = rows
         self.cols = cols
@@ -107,22 +90,24 @@ class RulesFactory(object):
         #self.rules_mtrx = self.loadMatrixFromExcellAsRules(file_locRules)
         self.rules_mtrx =  self.loadFromExcellAsRules_groupedByRows(file_locRules)
         if( self.show_log ):
-            logger.info('Matrix of rules:')
-            logger.info('##########################################################################################################################')
-            logger.info(self.rules_mtrx)
+            logging.debug('Matrix of rules:')
+            logging.debug('##########################################################################################################################')
+            logging.debug(self.rules_mtrx)
 
         #self.EvaluateAllRulesByColumns()
         self.EvaluateAllRulesByRows()
         if( self.show_log ):
-            logger.info('Dictionary of evaluated rules:')
-            logger.info('##########################################################################################################################')
-            logger.info(self.eval_rules_dict)
+            logging.debug('Dictionary of evaluated rules:')
+            logging.debug('##########################################################################################################################')
+            logging.debug(self.eval_rules_dict)
 
 
+
+   ########################################### Static methods and classes ########################################################
   
         # This is static method used as helper to download parameters from spreadsheet for BRM evaluator. 
         # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
-        def load_params_from_excel(file_loc,except_params=('STCC','Position','AAR_CAR_TYPE','SCS')):
+        def load_params_from_excel(file_loc):
             wkb=xlrd.open_workbook(file_loc)
             sheet=wkb.sheet_by_index(0)
             header_row = 0
@@ -134,35 +119,31 @@ class RulesFactory(object):
                          if(row == header_row): 
                              header_name = val
                              (globals()[header_name]) = (globals()[header_name+'_']) = []
-                         if(not(header in except_params)): #exception case: read first column as it is without hash conversion 
-                            if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
-                         (globals()[header_name]).append(val)
+                         hash_code = val    
+                         if(not( type(val) is float or type(val) is int ) ):
+                            hash_code = RulesFactory.convertToInt(val)
+                         (globals()[header_name]).append(hash_code)
+                         (globals()[header_name+'_']).append(val)
             return
 
-   ########################################### Static methods and classes ########################################################
 
     # This is static method used as helper to download parameters from json file for BRM evaluator. 
     # WARNING: Parameters must be initiated before any rules evaluations : (self.EvaluateAllRules())
-    def load_params_from_json(json_str, except_params=('STCC','Position','AAR_CAR_TYPE','SCS')):        
+    def load_params_from_json(json_str):        
         data = json.loads(json_str)
         for key in data[0]:
-            key_ = key
-            if(not (key in except_params)): 
-                key_ = key +'_'
-            else:
-                (globals()[key+'_']) = [] #Make params  like this 
-
-            (globals()[key_]) = []
-            temp = []
+            (globals()[key+'_']) = []
+            (globals()[key]) = []
+            hash_array = []
+            str_array = []
             for i in range(len(data)):
                 val = data[i][key]
-                if(not( key in except_params)):
-                    if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
-                temp.append(val)
-            #if(not( key in except_params)):
-            (globals()[key+'_']) =  RulesFactory.vector_to_matrix(temp)
-            if(key in except_params):
-                (globals()[key]) = temp
+                str_array.append(val)
+                #if(not( key in except_params)):
+                if(not( type(val) is float or type(val) is int ) ): val = RulesFactory.convertToInt(val)
+                hash_array.append(val)
+            (globals()[key+'_']) =  RulesFactory.vector_to_matrix(hash_array)
+            (globals()[key]) = str_array
         RulesFactory.is_params_loaded = True
         return len(data)
 
@@ -353,16 +334,16 @@ class RulesFactory(object):
                     _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,self.rows,self.cols), rule_params) )
             if( len(_rules)>0 ):
                self.eval_rules_dict[self.rule_names[i-1]] = _rules
-        logger.info("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
+        logging.info("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
 
     def log_error_message(self, key, ret):
         if (not self.show_log): return ''        
         msg=''
-        logger.info(ret)        
+        logging.info(ret)        
         if( any(r[0] == 0 for r in ret)):
             msg = key  + ': ' + self.error_message[key] 
             self.errors_msg += msg + '<br><br>'
-            logger.info(msg)
+            logging.info(msg)
         return msg
 
     def evaluate_none_arg_rules(self,key):
@@ -371,11 +352,11 @@ class RulesFactory(object):
         _r = eval(type(self).__name__ + '.'+self.rules_immediate_eval_dict[key])
           # convert result to array of arrays
         for r in _r: 
-             # do error log logger.infoing
+             # do error log logging.infoing
              if( r == 0 ): rule_failed += 1
              ret.append([r])
         if(self.show_log and rule_failed > 0 ): 
-            logger.info('Rule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
+            logging.info('Rule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
         return ret
 
      # Basic method to call all rules once
@@ -412,7 +393,7 @@ class RulesFactory(object):
             ret  +=  _ret*1 
             
         ret = ret/normalizer * 100
-        logger.info("Execution time: --- %s seconds ---" % (time.time() - start_time))
+        logging.info("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
     def collect_rule_statistic(self,ret):
@@ -423,7 +404,7 @@ class RulesFactory(object):
         positions_100 = []
         positions_ok = []
         for res in ret:
-           logger.info(res)
+           logging.info(res)
            if( res[0] == 0): 
                failed_count += 1 
                positions_f.append(j)
@@ -450,29 +431,29 @@ class RulesFactory(object):
         str_ok = ' '.join([str(x) + ', '  for x in positions_ok]) 
 
         html = '<html><h1> This  is BRM statistic: </h1>'
-        logger.info( self.errors_msg )
+        logging.info( self.errors_msg )
         if( str_f ):
             msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
-            logger.info( msg )
+            logging.info( msg )
             html +=  '<p><b> Total: <span style="color:red;"> ' + str(failed_count)  + '</span> car(s) with all rules failed in positions: <span style="color:red;">' + str_f  + '</span></b></p>'
         if( str_50 ):
             msg =  "Total: " + str(completed_50_count)  + " car failed in positions: " + str_50
-            logger.info( msg )
+            logging.info( msg )
             html +=  '<p><b> Total: <span style="color:orange;"> ' + str(completed_50_count)  + '</span> car(s) (position/rules completed rate): <span style="color:orange;">' + str_50  + '</span></b></p>'
         if( str_75 ):
             msg =  "Total: " + str(completed_75_count)  + " car failed in positions: " + str_75
-            logger.info( msg )
+            logging.info( msg )
             html +=  '<p><b> Total: <span style="color:orange;"> ' + str(completed_75_count)  + '</span> car(s) (position/rules completed rate): <span style="color:orange;">' + str_75  + '</span></b></p>'
         if( str_100 ):
             msg =  "Total: " + str(completed_100_count)  + " car failed in positions: " + str_100 
-            logger.info( msg )
+            logging.info( msg )
             html +=  '<p><b> Total: <span style="color:blue;"> ' + str(completed_100_count)  + '</span> car(s) (position/rules completed rate): <span style="color:blue;">' + str_100  + '</span></b></p>'
         if( str_ok ):
             msg =  "Total: " + str(completed_ok_count)  + " car with rules satisfied in positions: " + str_ok 
-            logger.info( msg )
+            logging.info( msg )
             html +=  '<p><b> Total: <span style="color:green;"> ' + str(completed_ok_count)  + '</span> car(s)  with all rules completed in positions: <span style="color:green;">' + str_ok  + ' has 100% success</span></b></p>'
         html += "</html>"
-        #logger.info(html)
+        #logging.info(html)
         return html
 
 """   Use this block for testing this class """
@@ -554,7 +535,7 @@ if(__name__ == "__main__"):
 
     rf = RulesFactory(file_locRules,rows,cols)
     rf.show_log = True
-    logger.info('########################################## BRM result ########################################################')   
+    logging.info('########################################## BRM result ########################################################')   
     ret = rf.fireBRM()
     rf.collect_rule_statistic(ret)
 
@@ -572,7 +553,7 @@ if(__name__ == "__main__"):
 
     str_f = ''.join([str(x)+',' for x in positions_f]) 
     str_ok = ''.join([str(x)+' with ' + str(int(ret[x][0])) + '% of success,'  for x in positions_ok]) 
-    logger.info(" Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f)
-    logger.info(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
+    logging.info(" Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f)
+    logging.info(" Total: " + str(completed_count) + " cars with some rules completed in positions: " + str_ok )
 
-    logger.info(ret)
+    logging.debug(ret)

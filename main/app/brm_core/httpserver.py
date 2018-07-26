@@ -7,8 +7,9 @@ from werkzeug import secure_filename
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 from time import sleep
+import uuid
 import logging
-
+from utils.logginginitializer import *
 
 
 
@@ -58,6 +59,12 @@ def prepare_params(filename):
     return rows
 
 
+@app.before_request
+def session_management():
+    # make the session last indefinitely until it is cleared
+    session.permanent = True
+
+
 @app.route('/ui', methods=['GET','POST'])
 def populate_rules_ui():
     template = env.get_template('ui.html')
@@ -65,6 +72,11 @@ def populate_rules_ui():
 
 @app.route('/', methods=['GET','POST'])
 def upload_brm_file():
+    # reset the session data
+    session.clear()
+    #Populate  aka session id 
+    if not 'uid' in session :
+        session['uid'] = str(uuid.uuid4().node)
     sel_params = cache.get('selected-params', '')
     if( sel_params =='' ): return redirect(url_for('post_parameters_as_JSON_file'))
     rows,cols = 2,1
@@ -73,7 +85,7 @@ def upload_brm_file():
         file_ext = file.filename[-4:].lower()
         if( file and file_ext == 'xlsx' ):
             filename = secure_filename(file.filename)
-            logger.info('file uploaded: ' + filename)
+            #logger.info('file uploaded: ' + filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             filename = app.config['UPLOAD_FOLDER'] +'/' + filename
 
@@ -81,7 +93,7 @@ def upload_brm_file():
             rows = prepare_params(sel_params)
 
             # load BRM rules
-            rf = RulesFactory(filename,rows,1)
+            rf = RulesFactory(filename,rows,1, session.get('uid', None)+ '.log')
             cache['rf'] = rf
             cache['selected-rule'] = filename
             # for browser, add 'redirect' function on top of 'url_for'
@@ -121,6 +133,8 @@ def upload_brm_file():
 
 @app.route('/params', methods=['GET','POST'])
 def post_parameters_as_JSON_file():
+    if  not 'uid' in session :
+        session['uid'] = str(uuid.uuid4().node)
     if request.method == 'POST':
         file = request.files['file']
         file_ext = file.filename[-4:].lower()
@@ -169,16 +183,25 @@ def post_parameters_as_JSON_file():
   #  session['main_tmplt'] = main_tmplt
     return render_template('main.html',main=main_tmplt)
 
-@app.route('/stream')
-def stream():
-    def generate():
-        with open('job.log') as f:
-                lines = tail(f,200)
+
+NO_LOG =  "<h3 align='center'>No log file yet</h3>"
+def generate(file):
+    try:
+        with open(file) as f:
+                lines = tail(f,1200)
                 for line in lines:
                     yield line
-#                sleep(1)
+    except :
+            yield NO_LOG
 
-    return app.response_class(generate(), mimetype='text/plain')
+@app.route('/stream')
+def stream():
+    if not 'uid' in session :
+       session['uid'] = str(uuid.uuid4().node)
+       return app.response_class(NO_LOG, mimetype='text/plain')
+    else:
+       file = output_dir +'/'+ session.get('uid', None) + '.log'
+       return app.response_class(generate(file), mimetype='text/plain')
 
 def tail(f, n):
     assert n >= 0
@@ -210,7 +233,7 @@ def fireBRM():
     rf = cache.get('rf')
     msg =''
     if(not rf):
-        rf = RulesFactory(sel_rules ,rows,cols)
+        rf = RulesFactory(sel_rules ,rows,cols, session.get('uid', None)+ '.log')
         rf.show_log = True
         ret = rf.fireBRM()
         msg = rf.collect_rule_statistic(ret)
@@ -223,22 +246,6 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if (__name__ == '__main__'):
+    app.run(host='0.0.0.0',threaded=True,port=8080)
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # create file handler which logs even debug messages
-    fh = logging.FileHandler('job.log')
-    fh.setLevel(logging.DEBUG)
-
-    console = logging.StreamHandler()
-    console.setLevel(logging.ERROR)
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    console.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(console)
-
-    app.run(host='0.0.0.0',threaded=True,port=8080) 
 
