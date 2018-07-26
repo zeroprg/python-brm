@@ -173,7 +173,7 @@ def post_parameters_as_JSON_file():
 def stream():
     def generate():
         with open('job.log') as f:
-                lines = tail(f,20)
+                lines = tail(f,200)
                 for line in lines:
                     yield line
 #                sleep(1)
