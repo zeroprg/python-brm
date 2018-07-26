@@ -60,6 +60,17 @@
                 height: auto;
             }
         }
+
+        .console {
+            display: -ms-flexbox; /* IE 10 */
+            display: flex;
+            -ms-flex-wrap: wrap; /* IE 10 */
+            flex-wrap: wrap;
+            padding: 0 4px;
+            max-height: 250px;
+            overflow-y: scroll;
+        }
+
     </style>
 </head>
 <body>
@@ -126,7 +137,7 @@
                 <hr>
                 {{ main.msg}}
                 <h3>Log file:</h3>
-                <div id="output"></div>
+                <div id="output" class="console"></div>
             </div>
        <!-- <div id="output" class="col-sm-2 sidenav">
             </div>
