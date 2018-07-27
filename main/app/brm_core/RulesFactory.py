@@ -31,7 +31,7 @@ class RulesFactory(object):
     #set true if parameters already loaded
     is_params_loaded = False
 
-    _funct_dict = {'check_first_2_characters_of': 'RulesFactory.vfind', "exclude":"RulesFactory.vexclude", "starts_with": "RulesFactory.vstarts_with", "Sum_of": 'sum'  }
+    _funct_dict = {'check_first_2_characters_of': 'vfind', "starts_with": "vstarts_with", "Sum_of": 'sum'  }
     _constant_dict = {'Y': 1, 'N': 0}
     _boolean_operations_dict = {} #' np.logical_and, np.logical_or, np.logical_xor 
 
@@ -62,13 +62,9 @@ class RulesFactory(object):
     def starts_with(string, arg):
         return (string.startswith(arg))
 
-    def exclude(string, arg):
-        return int(string.replace(arg,''))
-
 # define function to find as global variable
     vfind = np.vectorize(find)
     vstarts_with = np.vectorize(starts_with)
-    vexclude = np.vectorize(exclude)
 # test vfind 
 #logging.info(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
 
@@ -334,27 +330,18 @@ class RulesFactory(object):
                     pair = rule.split(operand)
                     rule_left = pair[0]
                     rule_right= pair[1]
-                    founded = False
-                    for item in  RulesFactory._funct_dict:
-                        if item in rule_left or item in rule_right: 
-                            if self.rule_names[i-1] in self.rules_immediate_eval_dict:
-                                self.rules_immediate_eval_dict[self.rule_names[i-1]] += ' and ' + rule_left + operand.replace('=<','<=').replace('>=','=>') + rule_right
-                            else:     
-                                self.rules_immediate_eval_dict[self.rule_names[i-1]] = rule_left + operand.replace('=<','<=').replace('>=','=>') + rule_right
-                            founded = True
-                            break
-                    if not founded:
-                        _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,self.rows,self.cols), rule_params) )
+
+                    _rules.append( (RuleEvaluator(rule_left,operand,rule_right,params,self.rows,self.cols), rule_params) )
             if( len(_rules)>0 ):
                self.eval_rules_dict[self.rule_names[i-1]] = _rules
-        logging.info("\nRules Evaluation time: --- %s seconds ---" % (time.time() - start_time))
+        logging.info("Evaluation time: --- %s seconds ---" % (time.time() - start_time))
 
     def log_error_message(self, key, ret):
         if (not self.show_log): return ''        
         msg=''
-        logging.debug('\n'+str(ret))        
+        logging.info(ret)        
         if( any(r[0] == 0 for r in ret)):
-            msg = '\n'+key  + ':\n ' + self.error_message[key] 
+            msg = key  + ': ' + self.error_message[key] 
             self.errors_msg += msg + '<br><br>'
             logging.info(msg)
         return msg
@@ -362,14 +349,14 @@ class RulesFactory(object):
     def evaluate_none_arg_rules(self,key):
         rule_failed = 0
         ret = []
-        _r = eval(self.rules_immediate_eval_dict[key])
+        _r = eval(type(self).__name__ + '.'+self.rules_immediate_eval_dict[key])
           # convert result to array of arrays
         for r in _r: 
              # do error log logging.infoing
              if( r == 0 ): rule_failed += 1
              ret.append([r])
         if(self.show_log and rule_failed > 0 ): 
-            logging.info('\nRule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
+            logging.info('Rule: ' + self.rules_immediate_eval_dict[key] + ' was failed ' + str(rule_failed) + ' time(s)') 
         return ret
 
      # Basic method to call all rules once
@@ -393,28 +380,20 @@ class RulesFactory(object):
                 else: # 2 arguments rule
                    rule_ret = rule.evaluate(*rule_params)
                 _ret =  rule_ret *_ret
-            #if( key in self.rules_immediate_eval_dict ) :  
-            #    _ret = _ret * self.evaluate_none_arg_rules(key)
-            #if( key in RulesFactory._boolean_operations_dict ): 
+            if( key in self.rules_immediate_eval_dict ) :  
+                _ret = _ret * self.evaluate_none_arg_rules(key)
+            if( key in RulesFactory._boolean_operations_dict ): 
                 #call numpy boolean functions for whole column _ret = np.logical_not(_ret)
-            #    if(RulesFactory._boolean_operations_dict[key] == 'NOT' ):
-            #        _ret = np.logical_not(_ret)
-            #    elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
-            #        _ret = np.logical_not(_ret,_ret)
+                if(RulesFactory._boolean_operations_dict[key] == 'NOT' ):
+                    _ret = np.logical_not(_ret)
+                elif(RulesFactory._boolean_operations_dict[key] == 'XOR' ):
+                    _ret = np.logical_not(_ret,_ret)
             normalizer += 1
             self.log_error_message(key, _ret)     
             ret  +=  _ret*1 
-        # evaluate immediate functions rules
-        for key in self.rules_immediate_eval_dict:            
-            _ret = ones
-            _ret = _ret * self.evaluate_none_arg_rules(key)
-            self.log_error_message(key, _ret)     
-            ret +=  _ret*1 
-
-
             
         ret = ret/normalizer * 100
-        logging.info("\nRules Execution time: --- %s seconds ---" % (time.time() - start_time))
+        logging.info("Execution time: --- %s seconds ---" % (time.time() - start_time))
         return ret
 
     def collect_rule_statistic(self,ret):
@@ -425,7 +404,7 @@ class RulesFactory(object):
         positions_100 = []
         positions_ok = []
         for res in ret:
-           logging.debug(res)
+           logging.info(res)
            if( res[0] == 0): 
                failed_count += 1 
                positions_f.append(j)
@@ -452,7 +431,7 @@ class RulesFactory(object):
         str_ok = ' '.join([str(x) + ', '  for x in positions_ok]) 
 
         html = '<html><h1> This  is BRM statistic: </h1>'
-        logging.info("\n--------------------- This total statistic -----------------------:")
+        logging.info( self.errors_msg )
         if( str_f ):
             msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 
             logging.info( msg )
@@ -474,7 +453,7 @@ class RulesFactory(object):
             logging.info( msg )
             html +=  '<p><b> Total: <span style="color:green;"> ' + str(completed_ok_count)  + '</span> car(s)  with all rules completed in positions: <span style="color:green;">' + str_ok  + ' has 100% success</span></b></p>'
         html += "</html>"
- 
+        #logging.info(html)
         return html
 
 """   Use this block for testing this class """

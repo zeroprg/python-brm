@@ -3,7 +3,23 @@ import theano, time, numpy
 import re
 
 import logging
+logger = logging.getLogger(__name__)
 
+logger = logging.getLogger('log')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler('job.log')
+fh.setLevel(logging.DEBUG)
+
+console = logging.StreamHandler()
+console.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+console.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(console)
 
 class RuleEvaluator(object):
     """A RuleEvalutor evaluate symbolic rule . RuleEvaluator have the
@@ -72,7 +88,7 @@ class RuleEvaluator(object):
                     self.f_switch.append(theano.function(arg_set, z_switch, mode=theano.Mode(linker='vm')))
 
     def __rule(self,p1,*therest):
-        logging.debug(self.rule)
+        logger.debug(self.rule)
         if(self.rule_right == '0'):
            r_str = self.rule_left + self.operand + self.rule_right
         else:
@@ -83,7 +99,7 @@ class RuleEvaluator(object):
     def evaluate(self,p1,*therest):
         if(len(p1) == 0): 
             msg ='Parameter(s): "' + self.args_str + '" must be initiated by not empty arrays before rule: "' + self.rule +'" evaluation'
-            logging.error(msg)
+            logger.error(msg)
             raise Exception(msg)
         ret = self.f_switch[0](p1,*therest)
         for i in range(1,len(self.f_switch)):
@@ -94,5 +110,5 @@ class RuleEvaluator(object):
             for r in ret:
                 if( 0. in r ) : rule_failed += 1
                     # rule failed
-            if ( rule_failed > 0 ): logging.debug( 'Rule: "' + self.rule + '" was failed ' + str(rule_failed) + ' time(s)')
+            if ( rule_failed > 0 ): logger.debug( 'Rule: "' + self.rule + '" was failed ' + str(rule_failed) + ' time(s)')
         return ret
