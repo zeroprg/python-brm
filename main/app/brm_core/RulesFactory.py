@@ -339,9 +339,9 @@ class RulesFactory(object):
                     for item in  RulesFactory._funct_dict:
                         if item in rule_left or item in rule_right: 
                             if self.rule_names[i-1] in self.rules_immediate_eval_dict:
-                                self.rules_immediate_eval_dict[self.rule_names[i-1]] += ' and ' + rule_left + _operand + rule_right
+                                self.rules_immediate_eval_dict[self.rule_names[i-1]] += ' * (' + rule_left + _operand + rule_right + ')'
                             else:     
-                                self.rules_immediate_eval_dict[self.rule_names[i-1]] = rule_left + operand + rule_right
+                                self.rules_immediate_eval_dict[self.rule_names[i-1]] =  ' (' +rule_left + operand + rule_right + ')'
                             founded = True
                             break
                     if not founded:
