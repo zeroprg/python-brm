@@ -77,9 +77,10 @@ def upload_brm_file():
     #Populate  aka session id 
     if not 'uid' in session :
         session['uid'] = str(uuid.uuid4().node)
+
     sel_params = cache.get('selected-params', '')
-    if( sel_params =='' ): return redirect(url_for('post_parameters_as_JSON_file'))
     rows,cols = 2,1
+
     if request.method == 'POST':
         file = request.files['file']
         file_ext = file.filename[-4:].lower()
@@ -89,6 +90,12 @@ def upload_brm_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             filename = app.config['UPLOAD_FOLDER'] +'/' + filename
 
+            hrefs = generate_file_list('xlsx')
+            main_tmplt.hrefs_li = Markup('<table>' + ''.join(['<tr> <td><a href="/?_file=' + href + '">' + href[8:] +'</a>' 
+                                                +' </td><td align="right"> <a href="/'        + href + '" class="btn btn-primary btn-sm" role="button">View</a></td></tr>' for href in hrefs]) + '</table>')
+
+            if sel_params == '':
+                return render_template('main.html',main=main_tmplt)
             #Prepare params (load them from file: sel_params)
             rows = prepare_params(sel_params)
 
@@ -103,10 +110,8 @@ def upload_brm_file():
             rs = rf.collect_rule_statistic(ret)
             return rs
  # Populate html on GET request
-   
-   
+    if( sel_params =='' ): return redirect(url_for('post_parameters_as_JSON_file'))
     hrefs = generate_file_list('xlsx')
-
     main_tmplt.hrefs_li = Markup('<table>' + ''.join(['<tr> <td><a href="/?_file=' + href + '">' + href[8:] +'</a>' 
                                                 +' </td><td align="right"> <a href="/'        + href + '" class="btn btn-primary btn-sm" role="button">View</a></td></tr>' for href in hrefs]) + '</table>')
     
