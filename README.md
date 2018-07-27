@@ -12,16 +12,14 @@
 7. Library used: 
 !["Theano symbolic library"](http://deeplearning.net/software/theano
 "Theano is best from the best. Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays efficiently. Theano features:
-tight integration with NumPy â€“ Use numpy.ndarray in Theano-compiled functions.
-transparent use of a GPU â€“ Perform data-intensive computations much faster than on a CPU.
-efficient symbolic differentiation â€“ Theano does your derivatives for functions with one or many inputs.
-speed and stability optimizations â€“ Get the right answer for log(1+x) even when x is really tiny.
-dynamic C code generation â€“ Evaluate expressions faster.
-extensive unit-testing and self-verification â€“ Detect and diagnose many types of errors.")
+tight integration with NumPy – Use numpy.ndarray in Theano-compiled functions.
+transparent use of a GPU – Perform data-intensive computations much faster than on a CPU.
+efficient symbolic differentiation – Theano does your derivatives for functions with one or many inputs.
+speed and stability optimizations – Get the right answer for log(1+x) even when x is really tiny.
+dynamic C code generation – Evaluate expressions faster.
+extensive unit-testing and self-verification – Detect and diagnose many types of errors.")
 
 !["Django Web project. "](https://realpython.com/learn/start-django/ )
 Solution wrapped as Visual Studio project.
 ##  Conclusion:
 This BRM engine is perfect tool (goal function) for optimal scenarious required to find best set arrangement of vector, matrix , tensor
-## Deployed here, (see link bellow)
-Check it out how it's working on Digital Ocean : http://brm.ninja/services
