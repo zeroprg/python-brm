@@ -394,8 +394,10 @@ class RulesFactory(object):
                 else: # 2 arguments rule
                    rule_ret = rule.evaluate(*rule_params)
                 _ret =  rule_ret *_ret
-            #if( key in self.rules_immediate_eval_dict ) :  
-            #    _ret = _ret * self.evaluate_none_arg_rules(key)
+                if( key in self.rules_immediate_eval_dict ):  
+                   _ret = _ret * self.evaluate_none_arg_rules(key)
+                   self.rules_immediate_eval_dict.pop(key, None)
+
             #if( key in RulesFactory._boolean_operations_dict ): 
                 #call numpy boolean functions for whole column _ret = np.logical_not(_ret)
             #    if(RulesFactory._boolean_operations_dict[key] == 'NOT' ):
@@ -453,6 +455,7 @@ class RulesFactory(object):
         str_ok = ' '.join([str(x) + ', '  for x in positions_ok]) 
 
         html = '<html><h1> This  is BRM statistic: </h1>'
+        html += '<span style="color:orange;">' + self.errors_msg + '</span>'
         logging.info("\n--------------------- This total statistic -----------------------:")
         if( str_f ):
             msg =  "Total: " + str(failed_count)  + " car with all rules failed in positions: " + str_f 

@@ -75,7 +75,7 @@ def upload_brm_file():
     def generate_rules_li():
         hrefs = generate_file_list('xlsx')
         li_markup = Markup('<table>' + ''.join(['<tr>'+
-                                    '<td align="left"><a href="/'        + href + '" class="btn btn-primary btn-sm" role="button">View</a></td> ' + 
+                                    '<td align="left"><a href="/'        + href + '" target="_blank" class="btn btn-primary btn-sm" role="button">View</a></td> ' + 
                                     '<td align="left"><a href="/?_file=' + href + '">' + href[8:] +'</a></td>'+
                                     '</tr>' for href in hrefs]) +
                                     '</table>')
@@ -148,7 +148,7 @@ def post_parameters_as_JSON_file():
        # bttn = ' &nbsp  &nbsp  &nbsp <a href="/params?_file='
        # main_tmplt.hrefs_li = Markup('<ol>' + ''.join(['<li><a href="/' + href + '">' + href[8:] +'</a>' + bttn + href + '">>>></a></li>' for href in hrefs]) + '</ol>')
         hrefs_li = Markup('<table>' + ''.join(['<tr>' + 
-                                               '<td align="left"> <a href="/' + href + '" class="btn btn-primary btn-sm" role="button">View</a></td>'
+                                               '<td align="left"> <a href="/' + href + '" target="_blank" class="btn btn-primary btn-sm" role="button">View</a></td>'
                                                '<td align="left"> <a href="/params?_file=' + href + '">' + href[8:] +'</a></td>' +
                                                '</tr>' for href in hrefs]) + '</table>')
         return hrefs_li
