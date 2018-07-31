@@ -60,7 +60,25 @@ class RulesFactory(object):
         return ret
 
     def starts_with(string, arg):
-        return (string.startswith(arg))
+        def starts_with_str(string, arg):
+            if '*' in arg: 
+                ret = True
+                i = 0
+                # compare character by character in loop:
+                for item in arg:
+                    i += 1
+                    if item =='*': continue
+                    ret *= (string[i-1] == item)
+                return ret    
+            else:
+                return (string.startswith(arg))
+
+        if type(arg) is list:
+            for _arg in arg:
+                if starts_with_str(string, arg): return True
+        else:
+            return starts_with_str(string, arg)
+
 
     def exclude(string, arg):
         return int(string.replace(arg,''))
@@ -502,7 +520,8 @@ if(__name__ == "__main__"):
                 "EMPTY_LOAD": 2,
                 "CAR_SERIES": "MILW10000",
                 "AAR_CAR_TYPE": "M310",
-                "SCS":"112J34534"
+                "SCS":"112J34534",
+                "ASSIGNMENT_NUMBER":2240
               },
               {
                 "STCC": "49422h",
@@ -516,7 +535,8 @@ if(__name__ == "__main__"):
                 "EMPTY_LOAD": 2,
                 "CAR_SERIES": "MILW123000",
                 "AAR_CAR_TYPE": "M340",
-                "SCS":"112J34534"
+                "SCS":"112J34534",
+                "ASSIGNMENT_NUMBER":2240
               },
               {
                 "STCC": "422h",
@@ -530,7 +550,8 @@ if(__name__ == "__main__"):
                 "EMPTY_LOAD": 2,
                 "CAR_SERIES": "MILW113000",
                 "AAR_CAR_TYPE": "M340",
-                "SCS":"112J34534"
+                "SCS":"112J34534",
+                "ASSIGNMENT_NUMBER":2240
               },
               {
                 "STCC": "4422h",
@@ -544,7 +565,8 @@ if(__name__ == "__main__"):
                 "EMPTY_LOAD": 2,
                 "CAR_SERIES": "MILW113000",
                 "AAR_CAR_TYPE": "M340",
-                "SCS":"112J34534"
+                "SCS":"112J34534",
+                "ASSIGNMENT_NUMBER":2240
               }  
             ]''')
 
