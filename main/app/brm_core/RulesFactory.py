@@ -9,7 +9,7 @@ import time
 import json
 from RuleEvaluator import RuleEvaluator
 from utils.logginginitializer import *
-
+from numpy import array
 
 # Class itself
 #================================================================================================
@@ -60,24 +60,17 @@ class RulesFactory(object):
         return ret
 
     def starts_with(string, arg):
-        def starts_with_str(string, arg):
-            if '*' in arg: 
-                ret = True
-                i = 0
-                # compare character by character in loop:
-                for item in arg:
-                    i += 1
-                    if item =='*': continue
-                    ret *= (string[i-1] == item)
-                return ret    
-            else:
-                return (string.startswith(arg))
-
-        if type(arg) is list:
-            for _arg in arg:
-                if starts_with_str(string, arg): return True
+        if '*' in arg: 
+            ret = True
+            i = 0
+            # compare character by character in loop:
+            for item in arg:
+                i += 1
+                if item =='*': continue
+                ret *= (string[i-1] == item)
+            return ret    
         else:
-            return starts_with_str(string, arg)
+            return (string.startswith(arg))
 
 
     def exclude(string, arg):
@@ -88,7 +81,7 @@ class RulesFactory(object):
     vstarts_with = np.vectorize(starts_with)
     vexclude = np.vectorize(exclude)
 # test vfind 
-#logging.info(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
+    #logging.info(vfind(['48werw','46sffsdf', '45sffsdf', '49gdf', '48sds'], [1,2,3,4,5]))
 
 
 # special dictionary which converts written  functions to python notations
