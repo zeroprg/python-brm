@@ -501,7 +501,7 @@ if(__name__ == "__main__"):
     #file_locParams="matrixOfParams.xlsx"
     #file_locRules="BRMRulesInColumns.xlsx"
     #file_locRules="BRMRulesInRows.xlsx"
-    file_locRules="BRMRulesLatest.xlsx"
+    file_locRules="MarshallingRules10perc.xlsx"
         #Test with JSON array
     rows = RulesFactory.load_params_from_json('''[
               {
