@@ -74,7 +74,10 @@ class RulesFactory(object):
 
 
     def exclude(string, arg):
-        return int(string.replace(arg,''))
+        if arg in string:
+            return float(string.replace(arg,''))
+        else: 
+            return float('nan')
 
 # define function to find as global variable
     vfind = np.vectorize(find)
@@ -511,10 +514,12 @@ if(__name__ == "__main__"):
                 "BEARINGS":"A",
                 "STATION": 6300,
                 "EMPTY_LOAD": 2,
-                "CAR_SERIES": "MILW10000",
+                "CAR_SERIES": "CP10000",
                 "AAR_CAR_TYPE": "M310",
                 "SCS":"112J34534",
-                "ASSIGNMENT_NUMBER":2240
+                "ASSIGNMENT_NUMBER":2240,
+                "OUTSIDE_LENGTH_FFII":2501,
+                "CLEARANCE":"F"
               },
               {
                 "STCC": "49422h",
@@ -526,10 +531,12 @@ if(__name__ == "__main__"):
                 "BEARINGS":"B",
                 "STATION": 6305,
                 "EMPTY_LOAD": 2,
-                "CAR_SERIES": "MILW123000",
+                "CAR_SERIES": "CP123000",
                 "AAR_CAR_TYPE": "M340",
                 "SCS":"112J34534",
-                "ASSIGNMENT_NUMBER":2240
+                "ASSIGNMENT_NUMBER":2240,
+                "OUTSIDE_LENGTH_FFII":2504,
+                "CLEARANCE":"F"
               },
               {
                 "STCC": "422h",
@@ -541,10 +548,12 @@ if(__name__ == "__main__"):
                 "BEARINGS":"C",
                 "STATION": 6304,
                 "EMPTY_LOAD": 2,
-                "CAR_SERIES": "MILW113000",
+                "CAR_SERIES": "CP370001",
                 "AAR_CAR_TYPE": "M340",
                 "SCS":"112J34534",
-                "ASSIGNMENT_NUMBER":2240
+                "ASSIGNMENT_NUMBER":2240,
+                "OUTSIDE_LENGTH_FFII":2504,
+                "CLEARANCE":"F"
               },
               {
                 "STCC": "4422h",
@@ -556,10 +565,12 @@ if(__name__ == "__main__"):
                 "BEARINGS":"C",
                 "STATION": 6104,
                 "EMPTY_LOAD": 2,
-                "CAR_SERIES": "MILW113000",
+                "CAR_SERIES": "MILW370000",
                 "AAR_CAR_TYPE": "M340",
                 "SCS":"112J34534",
-                "ASSIGNMENT_NUMBER":2240
+                "ASSIGNMENT_NUMBER":2240,
+                "OUTSIDE_LENGTH_FFII":2504,
+                "CLEARANCE":"F"
               }  
             ]''')
 
